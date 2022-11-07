@@ -18,24 +18,20 @@ def move_turtle():
 	lin_vel = 0
 	ang_vel = 0
 	while not rospy.is_shutdown():
-		
+	
 		if keyboard.is_pressed("a"):
-			rospy.loginfo("You pressed 'a'.")
-			break
-
-		if keyboard.read_key()=="a":
 			lin_vel += 0.5
-		if keyboard.read_key()=="z":
+		if keyboard.is_pressed("z"):
 			lin_vel -= 0.5
 
-		if keyboard.read_key()=="up":
-			lin_vel = 1.0
-		if keyboard.read_key()=="down":
-			lin_vel = -1.0
-		if keyboard.read_key()=="left":
-			ang_vel = 0.5
-		if keyboard.read_key()=="right":
-			ang_vel = -0.5
+		if keyboard.is_pressed("up"):
+			lin_vel = lin_vel + 0.5
+		if keyboard.is_pressed("down"):
+			lin_vel = lin_vel - 0.5
+		if keyboard.is_pressed("left"):
+			ang_vel = ang_vel + 0.5
+		if keyboard.is_pressed("right"):
+			ang_vel = ang_vel - 0.5
 
 		vel.linear.x = lin_vel 
 		vel.linear.y = 0 
