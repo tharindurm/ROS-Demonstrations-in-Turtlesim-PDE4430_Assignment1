@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 import rospy
-import keyboard
+#import keyboard
 from geometry_msgs.msg import Twist
 from turtlesim.msg import Pose
-
+import getch
 import sys
 
 def pose_callback(pose):
@@ -13,13 +13,26 @@ def move_turtle():
 	rospy.init_node('move_turtle', anonymous=False)
 	pub = rospy.Publisher('turtle1/cmd_vel', Twist, queue_size=10) 
 	rospy.Subscriber('/turtlel1/pose',Pose, pose_callback)
-	rate = rospy.Rate(10)
+	rate = rospy.Rate(60)
 	vel = Twist() 
-	lin_vel = 0
-	ang_vel = 0
+	lin_vel = 0.5
+	ang_vel = 0.2
 	while not rospy.is_shutdown():
-	
-		if keyboard.is_pressed("a"):
+
+		c = getch.getch()
+		rospy.loginfo("Pressed = %s",c)
+
+		if c=="w":
+			lin_vel = lin_vel
+		if c=="s":
+			lin_vel = -lin_vel
+		if c=="a":
+			ang_vel = ang_vel
+		if c=="d":
+			ang_vel = -ang_vel
+
+
+		'''if keyboard.is_pressed("a"):
 			lin_vel += 0.5
 		if keyboard.is_pressed("z"):
 			lin_vel -= 0.5
@@ -32,6 +45,7 @@ def move_turtle():
 			ang_vel = ang_vel + 0.5
 		if keyboard.is_pressed("right"):
 			ang_vel = ang_vel - 0.5
+		'''
 
 		vel.linear.x = lin_vel 
 		vel.linear.y = 0 
