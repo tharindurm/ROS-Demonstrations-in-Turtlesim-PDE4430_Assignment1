@@ -1,17 +1,20 @@
 #!/usr/bin/env python3
+
+'''
+Sources referred:
+
+https://automaticaddison.com/implementing-the-ros-turtlesim-project-with-rospy
+
+'''
+
 import rospy
-#import keyboard
 from geometry_msgs.msg import Twist
-from turtlesim.msg import Pose
 import getch
-import sys
 
-
+#Twist object created as a global variable
 vel = Twist()
 
-def pose_callback(pose):
-	rospy.loginfo("x= %f:Y= %f:Z=%f\n",pose.x,pose.y,pose.theta)
-	
+#This function changes the Twist object content with parameters
 def set_twist(linear_v, angular_v):
 	global vel
 	vel.linear.x = linear_v 
@@ -25,26 +28,31 @@ def set_twist(linear_v, angular_v):
 def move_turtle(): 
 	rospy.init_node('move_turtle', anonymous=False)
 	pub = rospy.Publisher('turtle1/cmd_vel', Twist, queue_size=10) 
-	rospy.Subscriber('/turtlel1/pose',Pose, pose_callback)
 	rate = rospy.Rate(60) 
-	lin_vel = 0.5
-	ang_vel = 0.2
-	rospy.loginfo("Initial values set to lin_vel = %.2f, ang_vel = %.2f",lin_vel,ang_vel)
+
+	#Initializing velocity values
+	lin_vel = 1.0
+	ang_vel = 0.8
+
+	rospy.loginfo("\n\nInitial values set to lin_vel = %.2f, ang_vel = %.2f\n\n",lin_vel,ang_vel)
+	
 	while not rospy.is_shutdown():
 
 		c = getch.getch()
-		#rospy.loginfo("Pressed = %s",c)
 
+		#Letters 'q' and 'z' are being used to change linear velocity
 		if c=="q":
 			lin_vel +=0.5
 		if c=="z":
 			lin_vel -=0.5
 		
+		#Letters 'e' and 'c' are being used to change angular velocity
 		if c=="e":
 			ang_vel +=0.2
 		if c=="c":
 			ang_vel -=0.2
 
+		#Movements of the robot is controlled using 'a','s','d','w'
 		if c=="w":
 			set_twist(lin_vel,0)
 			pub.publish(vel)
@@ -57,34 +65,18 @@ def move_turtle():
 		if c=="d":
 			set_twist(0,-ang_vel)
 			pub.publish(vel)
+
+		#Letter 'x' stops all the movements of the robot
 		if c=="x":
 			set_twist(0.0,0.0)
 			pub.publish(vel)
-		
-		'''
-		if keyboard.is_pressed("a"):
-			lin_vel += 0.5
-		if keyboard.is_pressed("z"):
-			lin_vel -= 0.5
-		
-		if keyboard.is_pressed("up"):
-			lin_vel = lin_vel + 0.5
-		if keyboard.is_pressed("down"):
-			lin_vel = lin_vel - 0.5
-		if keyboard.is_pressed("left"):
-			ang_vel = ang_vel + 0.5
-		if keyboard.is_pressed("right"):
-			ang_vel = ang_vel - 0.5
-		'''
- 
+
 		rospy.loginfo("Lin_Vel= %.2f : Ang_Vel = %.2f", lin_vel,ang_vel) 
-		
 		rate.sleep() 
+
 
 if __name__ == '__main__':
 	try:
-		#move_turtle(float(sys.argv[1]),float(sys.argv[2]))
 		move_turtle()
 	except rospy.ROSlnterruptException:
 		pass 
-
