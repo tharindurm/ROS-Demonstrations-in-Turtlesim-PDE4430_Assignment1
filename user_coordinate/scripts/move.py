@@ -6,37 +6,67 @@ from turtlesim.msg import Pose
 import getch
 import sys
 
+
+vel = Twist()
+
 def pose_callback(pose):
 	rospy.loginfo("x= %f:Y= %f:Z=%f\n",pose.x,pose.y,pose.theta)
 	
+def set_twist(linear_v, angular_v):
+	global vel
+	vel.linear.x = linear_v 
+	vel.linear.y = 0 
+	vel.linear.z = 0
+		 
+	vel.angular.x = 0 
+	vel.angular.y = 0
+	vel.angular.z = angular_v
+		
 def move_turtle(): 
 	rospy.init_node('move_turtle', anonymous=False)
 	pub = rospy.Publisher('turtle1/cmd_vel', Twist, queue_size=10) 
 	rospy.Subscriber('/turtlel1/pose',Pose, pose_callback)
-	rate = rospy.Rate(60)
-	vel = Twist() 
+	rate = rospy.Rate(60) 
 	lin_vel = 0.5
 	ang_vel = 0.2
+	rospy.loginfo("Initial values set to lin_vel = %.2f, ang_vel = %.2f",lin_vel,ang_vel)
 	while not rospy.is_shutdown():
 
 		c = getch.getch()
-		rospy.loginfo("Pressed = %s",c)
+		#rospy.loginfo("Pressed = %s",c)
+
+		if c=="q":
+			lin_vel +=0.5
+		if c=="z":
+			lin_vel -=0.5
+		
+		if c=="e":
+			ang_vel +=0.2
+		if c=="c":
+			ang_vel -=0.2
 
 		if c=="w":
-			lin_vel = lin_vel
+			set_twist(lin_vel,0)
+			pub.publish(vel)
 		if c=="s":
-			lin_vel = -lin_vel
+			set_twist(-lin_vel,0)
+			pub.publish(vel)
 		if c=="a":
-			ang_vel = ang_vel
+			set_twist(0,ang_vel)
+			pub.publish(vel)
 		if c=="d":
-			ang_vel = -ang_vel
-
-
-		'''if keyboard.is_pressed("a"):
+			set_twist(0,-ang_vel)
+			pub.publish(vel)
+		if c=="x":
+			set_twist(0.0,0.0)
+			pub.publish(vel)
+		
+		'''
+		if keyboard.is_pressed("a"):
 			lin_vel += 0.5
 		if keyboard.is_pressed("z"):
 			lin_vel -= 0.5
-
+		
 		if keyboard.is_pressed("up"):
 			lin_vel = lin_vel + 0.5
 		if keyboard.is_pressed("down"):
@@ -46,18 +76,8 @@ def move_turtle():
 		if keyboard.is_pressed("right"):
 			ang_vel = ang_vel - 0.5
 		'''
-
-		vel.linear.x = lin_vel 
-		vel.linear.y = 0 
-		vel.linear.z = 0
-		 
-		vel.angular.x = 0 
-		vel.angular.y = 0
-		vel.angular.z = ang_vel
-		 
-		rospy.loginfo("Linear Vel = %f: Angular Vel = %f", lin_vel,ang_vel) 
-		
-		pub.publish(vel)
+ 
+		rospy.loginfo("Lin_Vel= %.2f : Ang_Vel = %.2f", lin_vel,ang_vel) 
 		
 		rate.sleep() 
 
