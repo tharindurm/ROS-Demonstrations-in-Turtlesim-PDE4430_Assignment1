@@ -19,17 +19,25 @@ vel = Twist()
 
 
 
-def moveCommands(currentPoseData):
+def moveCommands(currentPoseData,vel_pub):
     
     global goal_pose
-    
+
     #calculating displacement
     displacement = sqrt(pow(goal_pose.x - currentPoseData.x,2) + pow(goal_pose.y - currentPoseData.y,2))
-    steering_angle = atan2(goal_pose.y-currentPoseData.y, goal_pose.x-currentPoseData.x)
+    steering_angle = atan2(goal_pose.y-currentPoseData.y, goal_pose.x-currentPoseData.x) - currentPoseData.theta
 
-    print("Steering angle: ",steering_angle,end="")
-    print("\tDisplacement: ",displacement)
-    print("   ")
+    #rospy.loginfo("X pos: %.2f, Y pos: %.2f ",currentPoseData.x,currentPoseData.y)
+    #rospy.loginfo("Disp : %.2f",displacement)
+    #rospy.loginfo(steering_angle)
+
+    vel.angular.z = steering_angle *0.5
+    vel.linear.x = displacement * 0.2
+
+    vel_pub.publish(vel)
+    print("Steering angle: ",round(vel.angular.z,4),end="")
+    print("\tDisplacement: ",round(vel.linear.x,4))
+    #print("   ")
 
 
 def autoMove():
@@ -38,9 +46,9 @@ def autoMove():
     rate = rospy.Rate(10)
     goal_pose.x = float(input("Enter destination X coordinate: "))
     goal_pose.y = float(input("Enter destination Y coordinate: "))
-    velocity_publisher = rospy.Publisher('/turtle1/cmd_vel',Twist, queue_size=10)
+    vel_pub = rospy.Publisher('/turtle1/cmd_vel',Twist, queue_size=10)
 
-    pose_subscriber = rospy.Subscriber('/turtle1/pose',Pose, moveCommands)
+    pose_subscriber = rospy.Subscriber('/turtle1/pose',Pose, moveCommands,vel_pub)
         
     rospy.spin()
 
