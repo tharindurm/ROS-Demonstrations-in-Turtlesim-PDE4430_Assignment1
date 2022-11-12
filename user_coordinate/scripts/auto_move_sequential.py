@@ -49,11 +49,17 @@ def moveCommands(currentPoseData,vel_pub):
         vel_pub.publish(vel)
     
     '''
-
-    vel.angular.z = atan2(goal_pose.y-currentPoseData.y, goal_pose.x-currentPoseData.x) - currentPoseData.theta
-    vel.linear.x = displacement * 0.2
-    vel_pub.publish(vel)
-
+    if displacement>0.2:
+        vel.angular.z = atan2(goal_pose.y-currentPoseData.y, goal_pose.x-currentPoseData.x) - currentPoseData.theta
+        vel.linear.x = displacement * 0.2
+        print("Displacement : ",displacement,"\n")
+        vel_pub.publish(vel)
+    else:
+        vel.angular.z = 0
+        vel.linear.x = 0
+        print("Displacement : Stopped")
+        vel_pub.publish(vel)
+        
     
     #print("\tDisplacement: ",round(displacement,4))
     #print("   ")
