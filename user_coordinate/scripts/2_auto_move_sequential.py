@@ -26,6 +26,26 @@ def inThreshRange(vals,thresh):
     else:
         return False
 
+def clamp_vel(speed, max, min):
+    if speed>max:
+        return max
+    else:
+        return min
+    return speed
+
+def turnUntil(currentTheta, goalTheta):
+    global vel_pub
+    turnCmd = Twist()
+    if goalTheta<0:
+        while(currentTheta>=goalTheta):
+            turnCmd.angular.z = -0.2
+            vel_pub.publish(turnCmd)
+    else:
+        while(currentTheta<=goalTheta):
+            turnCmd.angular.z = 0.2
+            vel_pub.publish(turnCmd)
+
+
 def moveCommands(currentPoseData):
     
     global goal_pose
@@ -41,19 +61,11 @@ def moveCommands(currentPoseData):
     print("current theta      : ",currentPoseData.theta)
     print("calculated atan2   : ",atan2(goal_pose.y-currentPoseData.y, goal_pose.x-currentPoseData.x) - currentPoseData.theta)
     print()
-    '''
-    if not inThreshRange(steering_angle,0.05):
-        print("Theta: ",round(currentPoseData.theta,4))
-        steering_angle = abs(atan2(goal_pose.y-currentPoseData.y, goal_pose.x-currentPoseData.x) - currentPoseData.theta)
-        vel.linear.x = 0.0
-        vel.angular.z = steering_angle *0.4
-        print("Steering angle: ",round(steering_angle,4))
-        vel_pub.publish(vel)
-    
-    '''
+
+
     if displacement>0.2:
         vel.angular.z = atan2(goal_pose.y-currentPoseData.y, goal_pose.x-currentPoseData.x) - currentPoseData.theta
-        vel.linear.x = displacement * 0.2
+        vel.linear.x = clamp_vel(displacement,1,0.4)
         print("Displacement : ",displacement,"\n")
         vel_pub.publish(vel)
     else:
@@ -62,9 +74,6 @@ def moveCommands(currentPoseData):
         print("Displacement : Stopped")
         vel_pub.publish(vel)
         
-    
-    #print("\tDisplacement: ",round(displacement,4))
-    #print("   ")
 
 
 def autoMove():
