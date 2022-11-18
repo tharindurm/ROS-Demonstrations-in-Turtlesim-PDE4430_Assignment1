@@ -12,76 +12,71 @@ from geometry_msgs.msg import Twist
 from turtlesim.msg import Pose
 from math import pow, atan2, sqrt
 
-
-#current_pose = Pose()
-goal_pose = Pose()
 vel = Twist()
+padding = 1
+avoided = False
+
+vel_pub = rospy.Publisher('/turtle1/cmd_vel',Twist, queue_size=10)
+
+'''
+def turn(turnAngle):#angle is given in radians
+    vel.linear.x = 0.6
+    vel.angular.z = 0.8
+    currentAngle = 0.0
+
+    t0 = rospy.Time.now().to_sec()
+
+    while currentAngle<turnAngle:
+        print("CurrentAngle : ",currentAngle)
+        t1 = rospy.Time.now().to_sec()
+        currentAngle = vel.angular.z * (t1-t0)
+        vel_pub.publish(vel)
+
+    vel.linear.x = 0
+    vel.angular.z = 0
+    vel_pub.publish(vel)
+    print("--------------------------Terminated --------------------------")
+'''
 
 
-def inThreshRange(vals,thresh):
-    val = abs(vals)
-    if (val-thresh)<val and val<(val+thresh):
-        return True
+def moveCommands(currentPoseData):
+    global avoided
+
+    if(currentPoseData.x<=11-padding and currentPoseData.x>0+padding):
+        print("There is space in x")
+        avoided = True
     else:
-        return False
-
-def moveCommands(currentPoseData,vel_pub):
-    
-    global goal_pose
-
-    displacement = sqrt(pow(goal_pose.x - currentPoseData.x,2) + pow(goal_pose.y - currentPoseData.y,2))
-    steering_angle = atan2(goal_pose.y-currentPoseData.y, goal_pose.x-currentPoseData.x) - currentPoseData.theta
-
-    print("current X:",currentPoseData.x," current Y:",currentPoseData.y)
-    print("Goal atan2         : ",atan2(goal_pose.y, goal_pose.x))
-    print("Current atan2      : ",atan2(currentPoseData.y, currentPoseData.x))
-    print("goal-current atan2 : ",atan2(goal_pose.y-currentPoseData.y, goal_pose.x-currentPoseData.x))
-    print("current theta      : ",currentPoseData.theta)
-    print("calculated atan2   : ",atan2(goal_pose.y-currentPoseData.y, goal_pose.x-currentPoseData.x) - currentPoseData.theta)
-    print()
-    '''
-    if not inThreshRange(steering_angle,0.05):
-        print("Theta: ",round(currentPoseData.theta,4))
-        steering_angle = abs(atan2(goal_pose.y-currentPoseData.y, goal_pose.x-currentPoseData.x) - currentPoseData.theta)
-        vel.linear.x = 0.0
-        vel.angular.z = steering_angle *0.4
-        print("Steering angle: ",round(steering_angle,4))
+        print("Collided with wall in X. Turning back-------------------------------")
+        vel.angular.z = 2.0
+        vel.linear.x = 1.0
         vel_pub.publish(vel)
+        #if(not avoided):
+            #turn(1.57)
+            #avoided = true
     
-    '''
-    if displacement>0.2:
-        vel.angular.z = atan2(goal_pose.y-currentPoseData.y, goal_pose.x-currentPoseData.x) - currentPoseData.theta
-        vel.linear.x = displacement * 0.2
-        print("Displacement : ",displacement,"\n")
-        vel_pub.publish(vel)
+    if(currentPoseData.y<=11-padding and currentPoseData.y>0+padding):
+        print("There is space in y")
+        avoided = False
+            
     else:
-        vel.angular.z = 0
-        vel.linear.x = 0
-        print("Displacement : Stopped")
+        print("Collided with wall in Y. Turning back")
+        #if(not avoided):
+        #    turn(1.57)
+        vel.angular.z = 2.0
+        vel.linear.x = 1.0
         vel_pub.publish(vel)
-        
-    
-    #print("\tDisplacement: ",round(displacement,4))
-    #print("   ")
-
 
 def autoMove():
     rospy.init_node('turtlebot_controller', anonymous=True)
 
     rate = rospy.Rate(10)
-    goal_pose.x = float(input("Enter destination X coordinate: "))
-    goal_pose.y = float(input("Enter destination Y coordinate: "))
-    vel_pub = rospy.Publisher('/turtle1/cmd_vel',Twist, queue_size=10)
-
-    pose_subscriber = rospy.Subscriber('/turtle1/pose',Pose, moveCommands,vel_pub)
+    pose_subscriber = rospy.Subscriber('/turtle1/pose',Pose, moveCommands)
         
     rospy.spin()
 
 
 if __name__ == '__main__':
     try:
-
         autoMove()
-            
     except rospy.ROSInterruptException:
         pass

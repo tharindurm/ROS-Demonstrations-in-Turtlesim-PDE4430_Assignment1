@@ -71,7 +71,6 @@ def move_turtle():
 			set_twist(0.0,0.0)
 			pub.publish(vel)
 
-		rospy.loginfo("Lin_Vel= %.2f : Ang_Vel = %.2f", lin_vel,ang_vel) 
 		rate.sleep() 
 
 
