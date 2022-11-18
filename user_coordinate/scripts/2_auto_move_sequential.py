@@ -52,7 +52,7 @@ def clamp_vel(speed, max, min):
     return speed
 
 def turnToGoal():
-    print("                 TURNING ------------------------")
+    print("Turning towards GOAL")
     global current_pose
     global goal_pose
 
@@ -78,17 +78,7 @@ def moveCalcualtions(currentPoseData):
     displacement = sqrt(pow(goal_pose.x - currentPoseData.x,2) + pow(goal_pose.y - currentPoseData.y,2))
     steering_angle = atan2(goal_pose.y-currentPoseData.y, goal_pose.x-currentPoseData.x) - currentPoseData.theta
 
-    #print("current X:",currentPoseData.x," current Y:",currentPoseData.y)
-    #print("Goal atan2         : ",atan2(goal_pose.y, goal_pose.x))
-    #print("Current atan2      : ",atan2(currentPoseData.y, currentPoseData.x))
-    #print("goal-current atan2 : ",atan2(goal_pose.y-currentPoseData.y, goal_pose.x-currentPoseData.x))
-    #print("Current orientation : ",math.degrees(atan2(goal_pose.y-currentPoseData.y, goal_pose.x-currentPoseData.x)))
-    #print("current theta      : ",currentPoseData.theta)
-    #print("calculated atan2   : ",atan2(goal_pose.y-currentPoseData.y, goal_pose.x-currentPoseData.x) - currentPoseData.theta)
-    #print("Current orientation : ",math.degrees(atan2(goal_pose.y-currentPoseData.y, goal_pose.x-currentPoseData.x) - currentPoseData.theta))
-    #print()
-
-def move():
+def moveToGoal():
     global current_pose
     global displacement
     global away
@@ -120,7 +110,7 @@ def autoMove():
 
     pose_subscriber = rospy.Subscriber('/turtle1/pose',Pose, moveCalcualtions)
     turnToGoal()
-    move()
+    moveToGoal()
     rospy.spin()
 
 

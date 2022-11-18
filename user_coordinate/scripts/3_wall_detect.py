@@ -1,77 +1,91 @@
 #!/usr/bin/env python3
-'''
-
-Source referred:
-
-https://github.com/clebercoutof/turtlesim_cleaner/blob/master/src/gotogoal.py
-
-'''
-
 import rospy
+import math
 from geometry_msgs.msg import Twist
 from turtlesim.msg import Pose
-from math import pow, atan2, sqrt
 
-vel = Twist()
-padding = 1
-avoided = False
+currentPose = Pose()
+move = Twist()
+move.linear.x = 0.8
+move.angular.z = 0.0
 
 vel_pub = rospy.Publisher('/turtle1/cmd_vel',Twist, queue_size=10)
 
-'''
-def turn(turnAngle):#angle is given in radians
-    vel.linear.x = 0.6
-    vel.angular.z = 0.8
-    currentAngle = 0.0
+def isBetween(min,num,max):
+    if num>=min and num<=max:
+        return True
+    return False
 
-    t0 = rospy.Time.now().to_sec()
+def isAround(val,dest,thresh):
+    if val>dest-thresh and val<dest+thresh:
+        return True
+    return False
 
-    while currentAngle<turnAngle:
-        print("CurrentAngle : ",currentAngle)
-        t1 = rospy.Time.now().to_sec()
-        currentAngle = vel.angular.z * (t1-t0)
-        vel_pub.publish(vel)
-
-    vel.linear.x = 0
-    vel.angular.z = 0
-    vel_pub.publish(vel)
-    print("--------------------------Terminated --------------------------")
-'''
+def normalizedDegrees(degree):
+    if isBetween(0,degree,180):
+        return degree
+    if isBetween(-180,degree,0):
+        return 180+(180-abs(degree))
 
 
-def moveCommands(currentPoseData):
-    global avoided
+def crashAvoidCmd():
+    global currentPose
+    global move
+    global vel_pub
 
-    if(currentPoseData.x<=11-padding and currentPoseData.x>0+padding):
-        print("There is space in x")
-        avoided = True
-    else:
-        print("Collided with wall in X. Turning back-------------------------------")
-        vel.angular.z = 2.0
-        vel.linear.x = 1.0
-        vel_pub.publish(vel)
-        #if(not avoided):
-            #turn(1.57)
-            #avoided = true
+    x = currentPose.x
+    y = currentPose.y
+
+    padding = 1
+
+    print("Degrees : ",math.degrees(currentPose.theta), "Theta : ",currentPose.theta)
     
-    if(currentPoseData.y<=11-padding and currentPoseData.y>0+padding):
-        print("There is space in y")
-        avoided = False
+    deg = normalizedDegrees(math.degrees(currentPose.theta))
+
+    attackAngle = 180 - deg
+
+    if y > 11 - padding:
+        if isBetween(90,deg,180):
+            newAngleHeading = 180+(180-deg)
+            print("180 to 90")
+            print("degrees : ", deg)
+            print("newAngleHeading : ",newAngleHeading)
+            print("attackAngle : ",attackAngle)
+
+            print(isAround(deg,newAngleHeading,5))
             
-    else:
-        print("Collided with wall in Y. Turning back")
-        #if(not avoided):
-        #    turn(1.57)
-        vel.angular.z = 2.0
-        vel.linear.x = 1.0
-        vel_pub.publish(vel)
+            while not isAround(deg,newAngleHeading,5):
+                print("turning")
+                print("Degrees : ",round(deg,2),"New heading : ",round(newAngleHeading,2))
+                move.angular.z =  4 * (11 - y)
+                vel_pub.publish(move)
+                deg = normalizedDegrees(math.degrees(currentPose.theta))
+            move.angular.z = 0.0
+            vel_pub.publish(move)
+
+        if isBetween(0,deg,90):
+            move.angular.z = 1.5
+
+   
+
+def updateGlobalCurrentPose(data):
+    global currentPose
+    currentPose = data
+    
 
 def autoMove():
-    rospy.init_node('turtlebot_controller', anonymous=True)
-
+    global currentPose
+    global vel_pub
+    rospy.init_node('edge_avoider', anonymous=True)
+    pose_subscriber = rospy.Subscriber('/turtle1/pose',Pose, updateGlobalCurrentPose)
+    
     rate = rospy.Rate(10)
-    pose_subscriber = rospy.Subscriber('/turtle1/pose',Pose, moveCommands)
-        
+
+    while not rospy.is_shutdown():
+        crashAvoidCmd()
+        vel_pub.publish(move)
+        rate.sleep()
+    
     rospy.spin()
 
 
