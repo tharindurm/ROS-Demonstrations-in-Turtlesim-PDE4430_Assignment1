@@ -5,11 +5,12 @@ from geometry_msgs.msg import Twist
 from turtlesim.msg import Pose
 
 currentPose = Pose()
+
 move = Twist()
 move.linear.x = 0.8
 move.angular.z = 0.0
 
-vel_pub = rospy.Publisher('/turtle1/cmd_vel',Twist, queue_size=10)
+#vel_pub = rospy.Publisher('/turtle1/cmd_vel',Twist, queue_size=10)
 
 def isBetween(min,num,max):
     if num>=min and num<=max:
@@ -28,10 +29,9 @@ def normalizedDegrees(degree):
         return 180+(180-abs(degree))
 
 
-def crashAvoidCmd():
+def crashAvoidCmd(vel_pub):
     global currentPose
     global move
-    global vel_pub
 
     x = currentPose.x
     y = currentPose.y
@@ -42,30 +42,121 @@ def crashAvoidCmd():
     
     deg = normalizedDegrees(math.degrees(currentPose.theta))
 
-    attackAngle = 180 - deg
 
     if y > 11 - padding:
+        
         if isBetween(90,deg,180):
             newAngleHeading = 180+(180-deg)
-            print("180 to 90")
-            print("degrees : ", deg)
-            print("newAngleHeading : ",newAngleHeading)
-            print("attackAngle : ",attackAngle)
-
-            print(isAround(deg,newAngleHeading,5))
             
             while not isAround(deg,newAngleHeading,5):
-                print("turning")
-                print("Degrees : ",round(deg,2),"New heading : ",round(newAngleHeading,2))
                 move.angular.z =  4 * (11 - y)
                 vel_pub.publish(move)
                 deg = normalizedDegrees(math.degrees(currentPose.theta))
             move.angular.z = 0.0
             vel_pub.publish(move)
+        
 
         if isBetween(0,deg,90):
-            move.angular.z = 1.5
+            newAngleHeading = normalizedDegrees(0-deg)
+            
+            while not isAround(deg,newAngleHeading,2.5):
+                move.angular.z =  -4 * (11 - y)
+                vel_pub.publish(move)
+                deg = normalizedDegrees(math.degrees(currentPose.theta))
+            
+            move.angular.z = 0.0
+            vel_pub.publish(move)
 
+
+    if y < 0 + padding:
+        
+        if isBetween(270,deg,360):
+            newAngleHeading = normalizedDegrees(360-deg)
+            
+            while not isAround(deg,newAngleHeading,5):
+                move.angular.z =  4 * abs((0-y))
+                vel_pub.publish(move)
+                deg = normalizedDegrees(math.degrees(currentPose.theta))
+            move.angular.z = 0.0
+            vel_pub.publish(move)
+        
+
+        if isBetween(180,deg,270):
+            newAngleHeading = normalizedDegrees(180-(deg-180))
+            print("deg : ",deg,"  newAngleHeading : ",newAngleHeading)
+            
+            while not isAround(deg,newAngleHeading,2.5):
+                move.angular.z =  -4 * abs((0-y))
+                print("angular: ",move.angular.z)
+                vel_pub.publish(move)
+                deg = normalizedDegrees(math.degrees(currentPose.theta))
+            
+            move.angular.z = 0.0
+            vel_pub.publish(move)
+
+
+
+
+    if x < 0 + padding:
+
+        if isBetween(90,deg,180):
+            newAngleHeading = 90-(90-(180-deg))
+            
+            while not isAround(deg,newAngleHeading,2.5):
+                move.angular.z =  -4 * (abs(0 - x))
+                vel_pub.publish(move)
+                deg = normalizedDegrees(math.degrees(currentPose.theta))
+            
+            move.angular.z = 0.0
+            vel_pub.publish(move)
+
+        if isBetween(180,deg,270):
+            print("3rd quad")
+            newAngleHeading = normalizedDegrees(0-(deg-180))
+            print("newAngleHeading : ",newAngleHeading)
+            print("deg : ",deg)
+
+            while not isAround(deg,newAngleHeading,2.5):
+                print("[0-90] Degrees : ",round(deg,2),"New heading : ",round(newAngleHeading,2))
+                move.angular.z =  4 * (abs(0-x))
+                vel_pub.publish(move)
+                deg = normalizedDegrees(math.degrees(currentPose.theta))
+            
+            move.angular.z = 0.0
+            vel_pub.publish(move)
+
+    
+    if x > 11 - padding:
+
+        if isBetween(0,deg,90):
+            newAngleHeading = 90+(90-deg)
+            
+            while not isAround(deg,newAngleHeading,2.5):
+                move.angular.z =  4 * (11-x)
+                vel_pub.publish(move)
+                deg = normalizedDegrees(math.degrees(currentPose.theta))
+            
+            move.angular.z = 0.0
+            vel_pub.publish(move)
+
+        if isBetween(270,deg,360):
+            print("3rd quad")
+            newAngleHeading = 180+(360-deg)
+            print("newAngleHeading : ",newAngleHeading)
+            print("deg : ",deg)
+
+            while not isAround(deg,newAngleHeading,2.5):
+                print("[0-90] Degrees : ",round(deg,2),"New heading : ",round(newAngleHeading,2))
+                move.angular.z =  -4 * (11-x)
+                vel_pub.publish(move)
+                deg = normalizedDegrees(math.degrees(currentPose.theta))
+            
+            move.angular.z = 0.0
+            vel_pub.publish(move)
+
+    
+
+    
    
 
 def updateGlobalCurrentPose(data):
@@ -75,14 +166,14 @@ def updateGlobalCurrentPose(data):
 
 def autoMove():
     global currentPose
-    global vel_pub
+    #global vel_pub
     rospy.init_node('edge_avoider', anonymous=True)
     pose_subscriber = rospy.Subscriber('/turtle1/pose',Pose, updateGlobalCurrentPose)
-    
+    vel_pub = rospy.Publisher('/turtle1/cmd_vel',Twist, queue_size=10)
     rate = rospy.Rate(10)
 
     while not rospy.is_shutdown():
-        crashAvoidCmd()
+        crashAvoidCmd(vel_pub)
         vel_pub.publish(move)
         rate.sleep()
     
