@@ -6,8 +6,10 @@ from turtlesim.msg import Pose
 
 currentPose = Pose()
 
+padding = 1
+
 move = Twist()
-move.linear.x = 0.8
+move.linear.x = 0.0
 move.angular.z = 0.0
 
 #vel_pub = rospy.Publisher('/turtle1/cmd_vel',Twist, queue_size=10)
@@ -23,6 +25,8 @@ def isAround(val,dest,thresh):
     return False
 
 def normalizedDegrees(degree):
+    if degree==0:
+        return 0.1
     if isBetween(0,degree,180):
         return degree
     if isBetween(-180,degree,0):
@@ -32,18 +36,18 @@ def normalizedDegrees(degree):
 def crashAvoidCmd(vel_pub):
     global currentPose
     global move
+    global padding
 
     x = currentPose.x
     y = currentPose.y
 
-    padding = 1
-
-    print("Degrees : ",math.degrees(currentPose.theta), "Theta : ",currentPose.theta)
+    print("Orientation : ",math.degrees(currentPose.theta))
     
     deg = normalizedDegrees(math.degrees(currentPose.theta))
 
 
     if y > 11 - padding:
+        print("Edge detected")
         
         if isBetween(90,deg,180):
             newAngleHeading = 180+(180-deg)
@@ -67,9 +71,10 @@ def crashAvoidCmd(vel_pub):
             move.angular.z = 0.0
             vel_pub.publish(move)
 
+        print("Phew....Turned back")
 
     if y < 0 + padding:
-        
+        print("Edge detected")
         if isBetween(270,deg,360):
             newAngleHeading = normalizedDegrees(360-deg)
             
@@ -83,8 +88,6 @@ def crashAvoidCmd(vel_pub):
 
         if isBetween(180,deg,270):
             newAngleHeading = normalizedDegrees(180-(deg-180))
-            print("deg : ",deg,"  newAngleHeading : ",newAngleHeading)
-            
             while not isAround(deg,newAngleHeading,2.5):
                 move.angular.z =  -4 * abs((0-y))
                 print("angular: ",move.angular.z)
@@ -93,12 +96,12 @@ def crashAvoidCmd(vel_pub):
             
             move.angular.z = 0.0
             vel_pub.publish(move)
-
+        print("Phew....Turned back")
 
 
 
     if x < 0 + padding:
-
+        print("Edge detected")
         if isBetween(90,deg,180):
             newAngleHeading = 90-(90-(180-deg))
             
@@ -113,21 +116,18 @@ def crashAvoidCmd(vel_pub):
         if isBetween(180,deg,270):
             print("3rd quad")
             newAngleHeading = normalizedDegrees(0-(deg-180))
-            print("newAngleHeading : ",newAngleHeading)
-            print("deg : ",deg)
 
             while not isAround(deg,newAngleHeading,2.5):
-                print("[0-90] Degrees : ",round(deg,2),"New heading : ",round(newAngleHeading,2))
                 move.angular.z =  4 * (abs(0-x))
                 vel_pub.publish(move)
                 deg = normalizedDegrees(math.degrees(currentPose.theta))
             
             move.angular.z = 0.0
             vel_pub.publish(move)
-
+        print("Phew....Turned back")
     
     if x > 11 - padding:
-
+        print("Edge detected")
         if isBetween(0,deg,90):
             newAngleHeading = 90+(90-deg)
             
@@ -140,20 +140,16 @@ def crashAvoidCmd(vel_pub):
             vel_pub.publish(move)
 
         if isBetween(270,deg,360):
-            print("3rd quad")
             newAngleHeading = 180+(360-deg)
-            print("newAngleHeading : ",newAngleHeading)
-            print("deg : ",deg)
 
             while not isAround(deg,newAngleHeading,2.5):
-                print("[0-90] Degrees : ",round(deg,2),"New heading : ",round(newAngleHeading,2))
                 move.angular.z =  -4 * (11-x)
                 vel_pub.publish(move)
                 deg = normalizedDegrees(math.degrees(currentPose.theta))
             
             move.angular.z = 0.0
             vel_pub.publish(move)
-
+        print("Phew....Turned back")
     
 
     
@@ -166,15 +162,20 @@ def updateGlobalCurrentPose(data):
 
 def autoMove():
     global currentPose
-    #global vel_pub
+    global move
+
     rospy.init_node('edge_avoider', anonymous=True)
     pose_subscriber = rospy.Subscriber('/turtle1/pose',Pose, updateGlobalCurrentPose)
     vel_pub = rospy.Publisher('/turtle1/cmd_vel',Twist, queue_size=10)
     rate = rospy.Rate(10)
-
+    
+    aDrive = input("Drive turtle automatically? [Y/N]  : ")
+    
     while not rospy.is_shutdown():
         crashAvoidCmd(vel_pub)
-        vel_pub.publish(move)
+        if aDrive=="y" or aDrive=="Y":
+            move.linear.x = 0.8
+            vel_pub.publish(move)
         rate.sleep()
     
     rospy.spin()
