@@ -1,17 +1,31 @@
 #!/usr/bin/env python3
-import rospy
-import turtlesim.srv
-import math
-from geometry_msgs.msg import Twist
-from turtlesim.msg import Pose
-
-currentPose = Pose()
-
-move = Twist()
-move.linear.x = 0.0
-move.angular.z = 0.0
 
 '''
+Referred sources
+
+https://github.com/aniskoubaa/ros_essentials_cpp/blob/master/src/topic02_motion/turtlesim/turtlesim_cleaner.py
+
+'''
+
+
+import rospy
+from geometry_msgs.msg import Twist
+from turtlesim.msg import Pose
+import turtlesim.srv
+from math import atan2,sqrt
+import time
+from std_srvs.srv import Empty
+
+move = Twist()
+
+currentPose = Pose()
+x = currentPose.x
+y = currentPose.y
+yaw = currentPose.theta
+
+vel_pub = rospy.Publisher('/cleaner/cmd_vel',Twist, queue_size=10)
+
+
 #Deleting default 'turtle1' instance form turtlesim
 rospy.wait_for_service('kill')
 killer = rospy.ServiceProxy('kill',turtlesim.srv.Kill)
@@ -20,98 +34,54 @@ killer("turtle1")
 #Spawning new turtle at a corner of the turtle sim
 rospy.wait_for_service('spawn')
 spawner = rospy.ServiceProxy('spawn', turtlesim.srv.Spawn)
-spawner(0.5, 0.5, 0, "cleaner")
-'''
-
-def isBetween(min,num,max):
-    if num>=min and num<=max:
-        return True
-    return False
-
-def isAround(val,dest,thresh):
-    if val>dest-thresh and val<dest+thresh:
-        return True
-    return False
-
-def normalizedDegrees(degree):
-    if degree==0:
-        return 0.1
-    if isBetween(0,degree,180):
-        return degree
-    if isBetween(-180,degree,0):
-        return 180+(180-abs(degree))
+spawner(0.5, 0.5, 0,"cleaner")
 
 
-def cleaning(vel_pub):
-    x_min,x_max = 0.5,10.5
-    y_min,y_max = 0.5,10.5
-
-    global move
+def moveToGoal(x_goal,y_goal):
     global currentPose
+    global displacement
+    global away
 
-    x = currentPose.x
-    y = currentPose.y
+    print("Move command Started")
+    while True:
+        print("Move command While Loop")
+        displacement = sqrt(pow(x_goal - currentPose.x,2) + pow(y_goal - currentPose.y,2))
 
-    orientation = normalizedDegrees(math.degrees(currentPose.theta))
-
-    if x >= x_min and x <= x_max:
-        move.linear.x = 1.0
-    else:
-        print("X out of range")
-
-    #Turning 90 degrees anticlock wise
-    if x > x_max:
-        newAngleHeading = 90
-        move.linear.x = 0.0
-        while not isAround(orientation,newAngleHeading,1):
-            print("turning")
-            move.angular.z =  0.4
+        if displacement>0.2:
+            move.angular.z = atan2(y_goal-currentPose.y, x_goal-currentPose.x) - currentPose.theta
+            move.linear.x = 0.8                
             vel_pub.publish(move)
-            orientation = normalizedDegrees(math.degrees(currentPose.theta))
-        move.angular.z = 0.0
-        vel_pub.publish(move)
-
-    #Check if turtle oriented to up. if so add linear velocity to move up
-    if isAround(orientation,90,2):
-        moveStraight(0.5,0.8,vel_pub)
-
-
-
-
-    print("Cleaning in progress")
-    #vel_pub.publish(move)
-
-def moveStraight(distance,speed,vel_pub):
-    global move
-
-    t0 = rospy.Time.now().to_sec()
-    current_distance = 0
-
-    while(current_distance < distance):
-        t1=rospy.Time.now().to_sec()
-        current_distance= speed*(t1-t0)
-        print("currentDistance : ",current_distance, "   Distance : ",distance)
-        vel_pub.publish(move)
-
-    move.linear.x = 0
-    vel_pub.publish(move)
+        else:
+            move.angular.z = 0
+            move.linear.x = 0
+            print("Displacement : Stopped")
+            vel_pub.publish(move)
+            break
+                
+    print("Move command ended")
 
 
 def updateGlobalCurrentPose(data):
     global currentPose
     currentPose = data
+    
 
-def autoClean():
+def autoMove():
     global currentPose
     global move
+    global vel_pub
 
     rospy.init_node('cleaner', anonymous=True)
-    pose_subscriber = rospy.Subscriber('/turtle1/pose',Pose, updateGlobalCurrentPose)
-    vel_pub = rospy.Publisher('/turtle1/cmd_vel',Twist, queue_size=10)
+    pose_subscriber = rospy.Subscriber('/cleaner/pose',Pose, updateGlobalCurrentPose)
     rate = rospy.Rate(10)
     
     while not rospy.is_shutdown():
-        cleaning(vel_pub)
+        moveToGoal(10.5,0.5)
+        moveToGoal(10.5,1)
+        moveToGoal(0.5,1)
+        moveToGoal(0.5,1.5)
+        moveToGoal(10.5,1.5)
+        #vel_pub.publish(move)
         rate.sleep()
     
     rospy.spin()
@@ -119,17 +89,233 @@ def autoClean():
 
 if __name__ == '__main__':
     try:
-        autoClean()
+        autoMove()
     except rospy.ROSInterruptException:
         pass
 
 
+
+
+
+
+
+
+
+
+
 '''
-might be needed in launch file
 
-<node pkg="com760_week5_ws_pkg" type="turtle_tf2_listener.py" name="listener1" output="screen">
-    <param name="turtle_number" value="turtle_1" />
-    <param name="start_position" value=[0,1,8]>
-</node>
+x = 0
+y = 0
+yaw = 0
 
+
+def poseCallback(pose_message):
+    global x
+    global y, yaw
+    x = pose_message.x
+    y = pose_message.y
+    yaw = pose_message.theta
+
+    # print "pose callback"
+    # print ('x = {}'.format(pose_message.x)) #new in python 3
+    # print ('y = %f' %pose_message.y) #used in python 2
+    # print ('yaw = {}'.format(pose_message.theta)) #new in python 3
+
+
+def move(speed, distance, is_forward):
+    # declare a Twist message to send velocity commands
+    velocity_message = Twist()
+    # get current location
+    global x, y
+    x0 = x
+    y0 = y
+
+    if (is_forward):
+        velocity_message.linear.x = abs(speed)
+    else:
+      	velocity_message.linear.x = -abs(speed)
+
+    distance_moved = 0.0
+
+    # we publish the velocity at 10 Hz (10 times a second)
+    loop_rate = rospy.Rate(10)
+    cmd_vel_topic = '/turtle1/cmd_vel'
+    velocity_publisher = rospy.Publisher(
+    cmd_vel_topic, Twist, queue_size=10)
+
+    while True:
+        rospy.loginfo("Turtlesim moves forwards")
+        velocity_publisher.publish(velocity_message)
+
+        loop_rate.sleep()
+
+              # rospy.Duration(1.0)
+
+        distance_moved = abs(
+        0.5 * math.sqrt(((x-x0) ** 2) + ((y-y0) ** 2)))
+        print distance_moved
+        if not (distance_moved < distance):
+                    rospy.loginfo("reached")
+                    break
+
+        # finally, stop the robot when the distance is moved
+        velocity_message.linear.x = 0
+        velocity_publisher.publish(velocity_message)
+
+
+def rotate(angular_speed_degree, relative_angle_degree, clockwise):
+
+    global yaw
+    velocity_message = Twist()
+    velocity_message.linear.x = 0
+    velocity_message.linear.y = 0
+    velocity_message.linear.z = 0
+    velocity_message.angular.x = 0
+    velocity_message.angular.y = 0
+    velocity_message.angular.z = 0
+
+    # get current location
+    theta0 = yaw
+    angular_speed = math.radians(abs(angular_speed_degree))
+
+    if (clockwise):
+        velocity_message.angular.z = -abs(angular_speed)
+    else:
+        velocity_message.angular.z = abs(angular_speed)
+
+    angle_moved = 0.0
+    # we publish the velocity at 10 Hz (10 times a second)
+    loop_rate = rospy.Rate(10)
+    cmd_vel_topic = '/turtle1/cmd_vel'
+    velocity_publisher = rospy.Publisher(cmd_vel_topic, Twist, queue_size=10)
+
+    t0 = rospy.Time.now().to_sec()
+
+    while True:
+        rospy.loginfo("Turtlesim rotates")
+        velocity_publisher.publish(velocity_message)
+
+        t1 = rospy.Time.now().to_sec()
+        current_angle_degree = (t1-t0)*angular_speed_degree
+        loop_rate.sleep()
+
+        if (current_angle_degree > relative_angle_degree):
+            rospy.loginfo("reached")
+            break
+
+    # finally, stop the robot when the distance is moved
+    velocity_message.angular.z = 0
+    velocity_publisher.publish(velocity_message)
+
+
+def go_to_goal(x_goal, y_goal):
+    global x
+    global y, yaw
+
+    velocity_message = Twist()
+    cmd_vel_topic = '/turtle1/cmd_vel'
+
+    while (True):
+        K_linear = 0.5
+        distance = abs(math.sqrt(((x_goal-x) ** 2) + ((y_goal-y) ** 2)))
+
+        linear_speed = distance * K_linear
+
+        K_angular = 4.0
+        desired_angle_goal = math.atan2(y_goal-y, x_goal-x)
+        angular_speed = (desired_angle_goal-yaw)*K_angular
+
+        velocity_message.linear.x = linear_speed
+        velocity_message.angular.z = angular_speed
+
+        velocity_publisher.publish(velocity_message)
+
+        # print velocity_message.linear.x
+        # print velocity_message.angular.z
+        print 'x=', x, 'y=', y
+
+        if (distance < 0.01):
+            break
+
+
+def setDesiredOrientation(desired_angle_radians):
+    relative_angle_radians = desired_angle_radians - yaw
+    if relative_angle_radians < 0:
+        clockwise = 1
+    else:
+        clockwise = 0
+    print relative_angle_radians
+    print desired_angle_radians
+    rotate(30, math.degrees(abs(relative_angle_radians)), clockwise)
+
+
+def gridClean():
+
+    desired_pose = Pose()
+    desired_pose.x = 1
+    desired_pose.y = 1
+    desired_pose.theta = 0
+
+    moveGoal(desired_pose, 0.01)
+
+    setDesiredOrientation(degrees2radians(desired_pose.theta))
+
+    move(2.0, 9.0, True)
+    rotate(degrees2radians(20), degrees2radians(90), False)
+    move(2.0, 9.0, True)
+    rotate(degrees2radians(20), degrees2radians(90), False)
+    move(2.0, 1.0, True)
+    rotate(degrees2radians(20), degrees2radians(90), False)
+    move(2.0, 9.0, True)
+    rotate(degrees2radians(30), degrees2radians(90), True)
+    move(2.0, 1.0, True)
+    rotate(degrees2radians(30), degrees2radians(90), True)
+    move(2.0, 9.0, True)
+    pass
+
+
+def spiralClean():
+    vel_msg = Twist()
+    loop_rate = rospy.Rate(1)
+    wk = 4
+    rk = 0
+
+    while ((currentTurtlesimPose.x < 10.5) and (currentTurtlesimPose.y < 10.5)):
+        rk = rk+1
+        vel_msg.linear.x = rk
+        vel_msg.linear.y = 0
+        vel_msg.linear.z = 0
+        vel_msg.angular.x = 0
+        vel_msg.angular.y = 0
+        vel_msg.angular.z = wk
+        velocity_publisher.publish(vel_msg)
+        loop_rate.sleep()
+
+    vel_msg.linear.x = 0
+    vel_msg.angular.z = 0
+    velocity_publisher.publish(vel_msg)
+
+
+if __name__ == '__main__':
+    try:
+
+        rospy.init_node('turtlesim_motion_pose', anonymous=True)
+
+        # declare velocity publisher
+        cmd_vel_topic = '/turtle1/cmd_vel'
+        velocity_publisher = rospy.Publisher(
+            cmd_vel_topic, Twist, queue_size=10)
+
+        position_topic = "/turtle1/pose"
+        pose_subscriber = rospy.Subscriber(position_topic, Pose, poseCallback)
+        time.sleep(2)
+
+        #move(1.0, 2.0, False)
+        #rotate(30, 90, True)
+        go_to_goal(1.0, 1.0)
+        # setDesiredOrientation(math.radians(90))
+
+    except rospy.ROSInterruptException:
+        rospy.loginfo("node terminated.")
 '''

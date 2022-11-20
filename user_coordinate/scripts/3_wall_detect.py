@@ -45,7 +45,6 @@ def crashAvoidCmd(vel_pub):
     
     deg = normalizedDegrees(math.degrees(currentPose.theta))
 
-
     if y > 11 - padding:
         print("Edge detected")
         
