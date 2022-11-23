@@ -12,7 +12,7 @@ import rospy
 from geometry_msgs.msg import Twist
 from turtlesim.msg import Pose
 import turtlesim.srv
-from math import atan2,sqrt
+from math import atan2,sqrt,radians,degrees
 import time
 from std_srvs.srv import Empty
 
@@ -21,7 +21,6 @@ move = Twist()
 currentPose = Pose()
 x = currentPose.x
 y = currentPose.y
-yaw = currentPose.theta
 
 vel_pub = rospy.Publisher('/cleaner/cmd_vel',Twist, queue_size=10)
 
@@ -36,35 +35,173 @@ rospy.wait_for_service('spawn')
 spawner = rospy.ServiceProxy('spawn', turtlesim.srv.Spawn)
 spawner(0.5, 0.5, 0,"cleaner")
 
+#Converts radians in to degrees. converts -180 to 0 to 180 range in to 0 to 360
+def radTo360(rad):
+    if rad>=0:
+        return degrees(rad)
+    return abs(degrees(rad))+180
+
+
+def heading360(deg):
+    if deg>=135 and deg<=225:
+        return 180
+    if deg>=0 and deg<=45:
+        return 0
+    if deg>=325 and deg<=360:
+        return 0
+
+
+
+def heading(rad):
+    deg = round(degrees(rad),1)
+    #print("processing in heading function: ",deg)
+
+    if 180>=deg and deg>=100:
+        return 180
+    if deg>=-180 and deg<-100:
+        return -180
+
+    if deg>=0 and deg<=45:
+        return 0
+    if deg<0 and deg>=-45:
+        return 0
+
+    if deg<100 and deg>90:
+        return 90
+    if deg>-135 and deg<-45:
+        #turtle will not turn towards down. so pass
+        pass
+
+
+def isAtEdge(x):
+    if x==0:
+        return False
+    if x>10.5 or x<0.5:
+        print("EDGE : ",x)
+        return True
+    if x>=0.5 and x<=10.5:
+        print("Inside : ",x)
+        return False
+
+def inRange():
+    pass
+
 
 def moveToGoal(x_goal,y_goal):
     global currentPose
     global displacement
-    global away
 
-    print("Move command Started")
+    displacement = sqrt(pow(x_goal - currentPose.x,2) + pow(y_goal - currentPose.y,2))
+
     while True:
-        print("Move command While Loop")
         displacement = sqrt(pow(x_goal - currentPose.x,2) + pow(y_goal - currentPose.y,2))
+        #steering_angle = atan2(y_goal-currentPose.y, x_goal-currentPose.x) - currentPose.theta
 
-        if displacement>0.2:
-            move.angular.z = atan2(y_goal-currentPose.y, x_goal-currentPose.x) - currentPose.theta
-            move.linear.x = 0.8                
+        try:
+            steering_vel = heading360(radTo360(currentPose.theta)) - degrees(currentPose.theta)
+            if heading360(radTo360(currentPose.theta))==180:
+                if currentPose.theta<0:
+                    steering_vel = abs(steering_vel) * -1
+                elif currentPose.theta>0:
+                    steering_vel = abs(steering_vel)
+                else:
+                    steering_vel = 0.0
+            elif heading360(radTo360(currentPose.theta))==0:
+                if currentPose.theta<0:
+                    steering_vel = abs(steering_vel)
+                elif currentPose.theta>0:
+                    steering_vel = abs(steering_vel) * -1
+                else:
+                    steering_vel = 0.0
+        except:
+            steering_vel = 0.0
+
+        #print("steering angle = ",heading(currentPose.theta)," - ",round(degrees(currentPose.theta),1)," steering_val:",steering_vel)
+        
+        move.linear.x = 1        
+        move.angular.z = steering_vel
+        vel_pub.publish(move)
+        
+        if isAtEdge(currentPose.x):
+            move.angular.z = 0
+            move.linear.x = 0
+            vel_pub.publish(move)
+            print("Reached destination")
+            break
+
+        '''
+        if displacement>0.1 or not isAtEdge(currentPose.x):
+            move.linear.x = 1        
+            move.angular.z = steering_vel
             vel_pub.publish(move)
         else:
             move.angular.z = 0
             move.linear.x = 0
-            print("Displacement : Stopped")
             vel_pub.publish(move)
+            print("Reached destination")
             break
-                
-    print("Move command ended")
+        '''
 
+def turnLeft90():
+    global currentPose
+    global vel_pub
+
+    turning = Twist()
+    turning.linear.x = 0
+    turning.angular.z = 0
+
+    finalAngle = currentPose.theta + radians(90)
+
+    while(currentPose.theta <=finalAngle-0.01):
+        print(degrees(currentPose.theta)," --> ",degrees(finalAngle))
+        print("currentDegree: ", currentPose.theta," target: ",finalAngle)
+        turning.angular.z = abs(currentPose.theta - finalAngle)
+        vel_pub.publish(turning)
+
+
+    print("Done")
+
+
+
+def moveVertical(distance):
+    verticalMove = Twist()
+    initY = currentPose.y
+    destPos = initY + distance
+
+    while currentPose.y <= destPos:
+        verticalMove.linear.x = 0.2
+        vel_pub.publish(verticalMove)
+
+    verticalMove.linear.x = 0.0
+    vel_pub.publish(verticalMove) 
+    print("Vertical move done")
+
+
+
+
+def turnRight90():
+    global currentPose
+    global vel_pub
+
+    turning = Twist()
+    turning.linear.x = 0
+    turning.angular.z = 0
+
+    finalAngle = currentPose.theta - radians(90)
+
+    while(currentPose.theta < finalAngle-0.01):
+        print("currentDegree: ", degrees(currentPose.theta)," target: ",degrees(finalAngle))
+        print("currentDegree: ", currentPose.theta," target: ",finalAngle)
+        turning.angular.z = -abs(currentPose.theta - finalAngle)
+        vel_pub.publish(turning)
+
+
+    print("Done")
 
 def updateGlobalCurrentPose(data):
     global currentPose
-    currentPose = data
-    
+    if not data is None:
+        currentPose = data
 
 def autoMove():
     global currentPose
@@ -75,16 +212,22 @@ def autoMove():
     pose_subscriber = rospy.Subscriber('/cleaner/pose',Pose, updateGlobalCurrentPose)
     rate = rospy.Rate(10)
     
-    while not rospy.is_shutdown():
-        moveToGoal(10.5,0.5)
-        moveToGoal(10.5,1)
-        moveToGoal(0.5,1)
-        moveToGoal(0.5,1.5)
-        moveToGoal(10.5,1.5)
-        #vel_pub.publish(move)
-        rate.sleep()
+    #while not rospy.is_shutdown():
     
-    rospy.spin()
+    moveToGoal(10.5,0.5)
+    turnLeft90()
+    moveVertical(0.5)
+    turnLeft90()
+    moveToGoal(0.5,1)
+
+    turnRight90()
+    moveToGoal(0.5,1.5)
+    turnRight90()
+    moveToGoal(10.5,1.5)
+        #vel_pub.publish(move)
+    #    rate.sleep()
+    
+    #rospy.spin()
 
 
 if __name__ == '__main__':
