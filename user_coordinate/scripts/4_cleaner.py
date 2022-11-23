@@ -47,7 +47,7 @@ def isBetween(val,min,max):
     return False
 
 def heading360(deg):
-    if isBetween(deg,0,44) and isBetween(deg,316,360):
+    if isBetween(deg,0,44) or isBetween(deg,316,360):
         return 0
     if isBetween(deg,45,134):
         return 90
@@ -236,7 +236,7 @@ def turnRight90():
 
     finalAngle = radians(heading360(degrees(finalAngle)))
 
-    while(currentPose.theta >= finalAngle+0.01):# -0.01 is crucial otherwise it takes lots of time to match the angles exactly for 5 decimals
+    while(currentPose.theta >= finalAngle+0.001):# -0.001 is crucial otherwise it takes lots of time to match the angles exactly for 5 decimals
         print(degrees(currentPose.theta)," --> ",degrees(finalAngle))
         #print("currentDegree: ", currentPose.theta," target: ",finalAngle)
         turning.angular.z = -1 * abs(currentPose.theta - finalAngle)
@@ -265,25 +265,15 @@ def autoMove():
     
     #while not rospy.is_shutdown():
     
-    moveHorizontal(10.5)
-    turnLeft90()
-    moveVertical(0.5)
-    turnLeft90()
-    moveHorizontal(10)
-    print('''
-    Ended
-        testing
-            multiline comments
-                with tripple 
-                    single quotes''')
-    turnRight90()
-    moveVertical(0.5)
-    turnRight90()
-    moveHorizontal(10.5)
-        #vel_pub.publish(move)
-    #    rate.sleep()
-    
-    #rospy.spin()
+    for i in range(10):
+        moveHorizontal(10.5)
+        turnLeft90()
+        moveVertical(0.5)
+        turnLeft90()
+        moveHorizontal(10)
+        turnRight90()
+        moveVertical(0.5)
+        turnRight90()
 
 
 if __name__ == '__main__':
