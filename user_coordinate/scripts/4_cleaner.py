@@ -41,14 +41,20 @@ def radTo360(rad):
         return degrees(rad)
     return abs(degrees(rad))+180
 
+def isBetween(val,min,max):
+    if val>=min and val<=max:
+        return True
+    return False
 
 def heading360(deg):
-    if deg>=135 and deg<=225:
+    if isBetween(deg,0,44) and isBetween(deg,316,360):
+        return 0
+    if isBetween(deg,45,134):
+        return 90
+    if isBetween(deg,135,224):
         return 180
-    if deg>=0 and deg<=45:
-        return 0
-    if deg>=325 and deg<=360:
-        return 0
+
+    print("DEG wtf: ",deg)
 
 
 
@@ -87,18 +93,37 @@ def inRange():
     pass
 
 
+prev_steering_vel = 0.0
+
+def clamp(val,min,max):
+    if val<min:
+        return min
+    elif val>max:
+        return max
+    else:
+        return val
+
 def moveToGoal(x_goal,y_goal):
     global currentPose
     global displacement
 
+
     displacement = sqrt(pow(x_goal - currentPose.x,2) + pow(y_goal - currentPose.y,2))
 
-    while True:
+    initDistance = currentPose.x
+    destDistance = currentPose.x + 10.5
+
+    while displacement>=0.1:
         displacement = sqrt(pow(x_goal - currentPose.x,2) + pow(y_goal - currentPose.y,2))
         #steering_angle = atan2(y_goal-currentPose.y, x_goal-currentPose.x) - currentPose.theta
 
         try:
             steering_vel = heading360(radTo360(currentPose.theta)) - degrees(currentPose.theta)
+            #steering_vel = (0.01 * steering_vel) + (0.99 * prev_steering_vel)
+
+            #prev_steering_vel = steering_vel
+            steering_vel = clamp(steering_vel,-0.1,0.1)
+
             if heading360(radTo360(currentPose.theta))==180:
                 if currentPose.theta<0:
                     steering_vel = abs(steering_vel) * -1
@@ -122,25 +147,34 @@ def moveToGoal(x_goal,y_goal):
         move.angular.z = steering_vel
         vel_pub.publish(move)
         
-        if isAtEdge(currentPose.x):
-            move.angular.z = 0
-            move.linear.x = 0
-            vel_pub.publish(move)
-            print("Reached destination")
-            break
+        
+    move.angular.z = 0
+    move.linear.x = 0
+    vel_pub.publish(move)
+    print("Reached destination")
 
-        '''
-        if displacement>0.1 or not isAtEdge(currentPose.x):
-            move.linear.x = 1        
-            move.angular.z = steering_vel
-            vel_pub.publish(move)
-        else:
-            move.angular.z = 0
-            move.linear.x = 0
-            vel_pub.publish(move)
-            print("Reached destination")
-            break
-        '''
+
+
+def moveHorizontal(dist):
+    global currentPose
+    global vel_pub
+
+    x_move = Twist()
+    x_move.linear.x = 0.8
+
+    startx = currentPose.x
+    totalDistance = 0
+
+    while totalDistance<=dist:
+        totalDistance = abs(currentPose.x - startx)
+        print("TotalDistance : ",totalDistance)
+        vel_pub.publish(x_move)
+
+    x_move.linear.x = 0.0
+    vel_pub.publish(x_move)
+    print("Horizontal move ended")
+
+
 
 def turnLeft90():
     global currentPose
@@ -152,14 +186,22 @@ def turnLeft90():
 
     finalAngle = currentPose.theta + radians(90)
 
-    while(currentPose.theta <=finalAngle-0.01):
+    #print("finalAngle: ",finalAngle)
+    #print("heading360(finalAngle): ",heading360(finalAngle))
+
+    finalAngle = radians(heading360(degrees(finalAngle)))
+
+    while(currentPose.theta <= finalAngle-0.001):# -0.001 is crucial otherwise it takes lots of time to match the angles exactly for 5 decimals
         print(degrees(currentPose.theta)," --> ",degrees(finalAngle))
-        print("currentDegree: ", currentPose.theta," target: ",finalAngle)
+        #print("currentDegree: ", currentPose.theta," target: ",finalAngle)
         turning.angular.z = abs(currentPose.theta - finalAngle)
         vel_pub.publish(turning)
 
 
-    print("Done")
+    turning.linear.x = 0
+    turning.angular.z = 0
+    vel_pub.publish(turning)
+    print("Turning Left Done")
 
 
 
@@ -189,14 +231,23 @@ def turnRight90():
 
     finalAngle = currentPose.theta - radians(90)
 
-    while(currentPose.theta < finalAngle-0.01):
-        print("currentDegree: ", degrees(currentPose.theta)," target: ",degrees(finalAngle))
-        print("currentDegree: ", currentPose.theta," target: ",finalAngle)
-        turning.angular.z = -abs(currentPose.theta - finalAngle)
+    #print("finalAngle: ",finalAngle)
+    #print("heading360(finalAngle): ",heading360(finalAngle))
+
+    finalAngle = radians(heading360(degrees(finalAngle)))
+
+    while(currentPose.theta >= finalAngle+0.01):# -0.01 is crucial otherwise it takes lots of time to match the angles exactly for 5 decimals
+        print(degrees(currentPose.theta)," --> ",degrees(finalAngle))
+        #print("currentDegree: ", currentPose.theta," target: ",finalAngle)
+        turning.angular.z = -1 * abs(currentPose.theta - finalAngle)
         vel_pub.publish(turning)
 
 
-    print("Done")
+    turning.linear.x = 0
+    turning.angular.z = 0
+    vel_pub.publish(turning)
+    print("Turning Right Done")
+
 
 def updateGlobalCurrentPose(data):
     global currentPose
@@ -214,16 +265,21 @@ def autoMove():
     
     #while not rospy.is_shutdown():
     
-    moveToGoal(10.5,0.5)
+    moveHorizontal(10.5)
     turnLeft90()
     moveVertical(0.5)
     turnLeft90()
-    moveToGoal(0.5,1)
-
+    moveHorizontal(10)
+    print('''
+    Ended
+        testing
+            multiline comments
+                with tripple 
+                    single quotes''')
     turnRight90()
-    moveToGoal(0.5,1.5)
+    moveVertical(0.5)
     turnRight90()
-    moveToGoal(10.5,1.5)
+    moveHorizontal(10.5)
         #vel_pub.publish(move)
     #    rate.sleep()
     
