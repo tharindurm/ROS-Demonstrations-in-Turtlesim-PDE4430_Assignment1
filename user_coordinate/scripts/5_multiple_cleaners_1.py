@@ -20,7 +20,7 @@ currentPose = Pose()
 x = currentPose.x
 y = currentPose.y
 
-vel_pub = rospy.Publisher('/cleaner/cmd_vel',Twist, queue_size=10)
+vel_pub = rospy.Publisher('/cleaner_1/cmd_vel',Twist, queue_size=10)
 
 #Deleting default 'turtle1' instance form turtlesim
 rospy.wait_for_service('kill')
@@ -30,7 +30,7 @@ killer("turtle1")
 #Spawning new turtle at a corner of the turtle sim
 rospy.wait_for_service('spawn')
 spawner = rospy.ServiceProxy('spawn', turtlesim.srv.Spawn)
-spawner(0.5, 0.5, 0,"cleaner")
+spawner(0.5, 0.250, 0,"cleaner_1")
 
 def isBetween(val,min,max):
     if val>=min and val<=max:
@@ -147,20 +147,20 @@ def autoMove():
     global currentPose
     global vel_pub
 
-    rospy.init_node('cleaner', anonymous=True)
-    pose_subscriber = rospy.Subscriber('/cleaner/pose',Pose, updateGlobalCurrentPose)
+    rospy.init_node('cleaner_1', anonymous=True)
+    pose_subscriber = rospy.Subscriber('/cleaner_1/pose',Pose, updateGlobalCurrentPose)
     rate = rospy.Rate(10)
     
-    moveHorizontal(10.5)
-    for i in range(10):
+    moveHorizontal(5.5)
+    for i in range(5):
         turnLeft90()
         moveVertical(0.5)
         turnLeft90()
-        moveHorizontal(10)
+        moveHorizontal(5)
         turnRight90()
         moveVertical(0.5)
         turnRight90()
-        moveHorizontal(10)
+        moveHorizontal(5)
 
 if __name__ == '__main__':
     try:
