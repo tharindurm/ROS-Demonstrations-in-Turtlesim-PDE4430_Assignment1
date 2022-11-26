@@ -12,7 +12,7 @@ import rospy
 from geometry_msgs.msg import Twist
 from turtlesim.msg import Pose
 import turtlesim.srv
-from math import atan2,sqrt,radians,degrees
+from math import radians,degrees
 import time
 from std_srvs.srv import Empty
 
@@ -60,6 +60,9 @@ def moveHorizontal(dist):
 
     x_move = Twist()
     x_move.linear.x = 0.8
+
+    while currentPose.x==0:
+       pass
 
     startx = currentPose.x
     totalDistance = 0
@@ -162,6 +165,9 @@ def autoMove():
         moveVertical(0.5)
         turnRight90()
         moveHorizontal(5)
+
+    rospy.spin()
+    
 
 if __name__ == '__main__':
     try:

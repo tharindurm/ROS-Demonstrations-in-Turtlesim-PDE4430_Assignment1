@@ -2,9 +2,7 @@
 
 '''
 Referred sources
-
 https://github.com/aniskoubaa/ros_essentials_cpp/blob/master/src/topic02_motion/turtlesim/turtlesim_cleaner.py
-
 '''
 
 
@@ -12,7 +10,7 @@ import rospy
 from geometry_msgs.msg import Twist
 from turtlesim.msg import Pose
 import turtlesim.srv
-from math import atan2,sqrt,radians,degrees
+from math import radians,degrees
 import time
 from std_srvs.srv import Empty
 
@@ -153,7 +151,7 @@ def autoMove():
     rate = rospy.Rate(10)
     
     
-    for i in range(4):
+    for i in range(5):
         moveHorizontal(5)
         turnLeft90()
         moveVertical(0.5)
@@ -162,12 +160,9 @@ def autoMove():
         turnRight90()
         moveVertical(0.5)
         turnRight90()
-
     moveHorizontal(5)
-    turnLeft90()
-    moveVertical(0.5)
-    turnLeft90()
-    moveHorizontal(5)
+    
+    rospy.spin
 
 if __name__ == '__main__':
     try:
