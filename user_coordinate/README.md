@@ -37,7 +37,7 @@ Use following command structure to execute the files.
 But this can be sometimes cumbersome to open at least 3 terminals each time for `roscore`,`turtlesim`, and node which is being tested.
 
 
-To make the execution of the programs easy, separate launch files were created and are available in the 'launch' folder 
+To make the execution of the programs easy, separate launch files were created and are available in the 'launch' folder. 
 
 Use the following command with the relevent launch file name to execute the nodes
 
@@ -176,7 +176,7 @@ It was noted during the implementation that sometimes synchronization problems c
 
 
 ## Custom helper functions used
-Name: **inThreshRange(value,threshold)**
+**Name: inThreshRange(value,threshold)**
 
 
 ```python
@@ -202,7 +202,7 @@ reaches any where between `4.95` to `5.05`
 This gives `value` a wiggle room to be `True`.
 
 
-Name: **clamp_vel(current_speed,max_speed,min_speed)**
+**Name: clamp_vel(current_speed,max_speed,min_speed)**
 ```python
 def clamp_vel(speed, max, min):
     if speed>=max:
@@ -223,7 +223,7 @@ slow when reaching the goal. To avoid this problem above function can be used
 to have a minimum and maximum linear velocity.
 
 
-Name: **normalizedDegrees(degree)**
+**Name: normalizedDegrees(degree)**
 ```python
 def normalizedDegrees(degree):
     if degree==0:
@@ -235,11 +235,10 @@ def normalizedDegrees(degree):
 ```
 Output: Returns a value between 0 to 359 when theta is given
 
-This is usefull to understand the orientation of the turtle instead of using
- radians which rang from `0->3.14` and `(-3.14)->0`. By having a value between `0` and `359`
- it is easy to understand which direction the turtle is facing.
+This is usefull to understand the orientation of the turtle instead of using radians which rang from `0->3.14` and `(-3.14)->0`. By having a value between `0` and `359` it is easy to understand which direction the turtle is facing.
 
-Name: **heading360(degree)**
+
+**Name: heading360(degree)**
 
 ```python
 def heading360(deg):

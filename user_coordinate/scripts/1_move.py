@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 
+#Student ID: M00909166
+
 '''
 Sources referred:
 
@@ -32,7 +34,7 @@ def instructions():
 	''')
 	
 
-#This function changes the Twist object content with parameters
+#This function changes the Twist object content with the parameters it receives
 def set_twist(linear_v, angular_v):
 	global vel
 	vel.linear.x = linear_v 
@@ -43,6 +45,8 @@ def set_twist(linear_v, angular_v):
 	vel.angular.y = 0
 	vel.angular.z = angular_v
 		
+
+#Responsible for initializing the node and publishing commands in to 'cmd_vel' topic
 def move_turtle(): 
 	rospy.init_node('move_turtle', anonymous=False)
 	pub = rospy.Publisher('turtle1/cmd_vel', Twist, queue_size=10) 
