@@ -46,10 +46,10 @@ def notInThreshAngle(current, goal, thresh):
             return False
 
 
-def clamp_vel(speed, max, min):
-    if speed>max:
+def clamp(speed, max, min):
+    if speed>=max:
         return max
-    else:
+    elif speed<=min:
         return min
     return speed
 
@@ -88,12 +88,12 @@ def moveToGoal():
     global thresh
 
     print("Move command Started")
-    while True:
+    while not displacement<thresh:
         if away:
             print("Move command While Loop")
             if displacement>thresh:
                 vel.angular.z = atan2(goal_pose.y-current_pose.y, goal_pose.x-current_pose.x) - current_pose.theta
-                vel.linear.x = clamp_vel(displacement,1,0.4)
+                vel.linear.x = clamp(displacement,1,0.4)
                 #print("Displacement : ",displacement,"\n")
                 vel_pub.publish(vel)
             else:
@@ -102,7 +102,8 @@ def moveToGoal():
                 print("Displacement : Stopped")
                 vel_pub.publish(vel)
                 away = False
-    #print("Move command ended")
+    
+    print("Task 2 Completed. Exiting now")
 
 def autoMove():
     rospy.init_node('turtlebot_controller', anonymous=True)
@@ -115,7 +116,6 @@ def autoMove():
     pose_subscriber = rospy.Subscriber('/turtle1/pose',Pose, moveCalcualtions)
     turnToGoal()
     moveToGoal()
-    rospy.spin()
 
 
 if __name__ == '__main__':

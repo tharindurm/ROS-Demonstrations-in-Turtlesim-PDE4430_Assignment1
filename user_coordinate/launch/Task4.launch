@@ -1,0 +1,4 @@
+<launch>
+<node pkg="turtlesim" type="turtlesim_node" name="turtle"></node>
+<node name="cleaner" pkg="user_coordinate" type="4_cleaner.py" output="screen"></node>
+</launch>

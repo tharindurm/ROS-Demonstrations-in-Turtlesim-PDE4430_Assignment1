@@ -22,15 +22,11 @@ y = currentPose.y
 
 vel_pub = rospy.Publisher('/cleaner_3/cmd_vel',Twist, queue_size=10)
 
-#Deleting default 'turtle1' instance form turtlesim
-#rospy.wait_for_service('kill')
-#killer = rospy.ServiceProxy('kill',turtlesim.srv.Kill)
-#killer("turtle1")
 
 #Spawning new turtle at a corner of the turtle sim
 rospy.wait_for_service('spawn')
 spawner = rospy.ServiceProxy('spawn', turtlesim.srv.Spawn)
-spawner(5.75, 0.25, radians(90),"cleaner_3")
+spawner(5.25, 0.250, 0,"cleaner_3")
 
 def isBetween(val,min,max):
     if val>=min and val<=max:
@@ -44,7 +40,6 @@ def heading360(deg):
         return 90
     if isBetween(deg,135,224):
         return 180
-    return 270
 
 def clamp(val,min,max):
     if val<min:
@@ -62,10 +57,9 @@ def moveHorizontal(dist):
     x_move.linear.x = 0.8
 
     startx = currentPose.x
-
     totalDistance = 0
 
-    while totalDistance<=dist and currentPose.x!=0:
+    while totalDistance<=dist:
         totalDistance = abs(currentPose.x - startx)
         print("TotalDistance : ",totalDistance)
         x_move.linear.x = clamp(dist-totalDistance,0.8,2)
@@ -76,14 +70,13 @@ def moveHorizontal(dist):
     print("Horizontal move ended")
 
 
-
 def moveVertical(distance):
     verticalMove = Twist()
     initY = currentPose.y
     destPos = initY + distance
 
     while currentPose.y <= destPos:
-        verticalMove.linear.x = 0.8
+        verticalMove.linear.x = 0.2
         vel_pub.publish(verticalMove)
 
     verticalMove.linear.x = 0.0
@@ -125,11 +118,10 @@ def turnRight90():
     turning.angular.z = 0
 
     finalAngle = currentPose.theta - radians(90)
-    print("Init Final: ",finalAngle)
+
     finalAngle = radians(heading360(degrees(finalAngle)))
 
     # -0.001 is crucial otherwise it takes lots of time to match the angles exactly for 5 decimals
-    print("FinalAngle: ",finalAngle," | currentPose.theta: ",currentPose.theta)
     while(currentPose.theta >= finalAngle+0.001):
         print(degrees(currentPose.theta)," --> ",degrees(finalAngle))
         turning.angular.z = -1 * abs(currentPose.theta - finalAngle)
@@ -144,7 +136,8 @@ def turnRight90():
 
 def updateGlobalCurrentPose(data):
     global currentPose
-    currentPose = data
+    if not data is None:
+        currentPose = data
 
 def autoMove():
     global currentPose
@@ -154,15 +147,7 @@ def autoMove():
     pose_subscriber = rospy.Subscriber('/cleaner_3/pose',Pose, updateGlobalCurrentPose)
     rate = rospy.Rate(10)
     
-    moveVertical(3)
-    turnRight90()
-    moveHorizontal(0.5)
-    turnRight90()
-    moveVertical(5)
-    #turnLeft90()
-    #moveHorizontal(0.5)
-    #turnLeft90()
-    '''
+    moveHorizontal(5.5)
     for i in range(5):
         turnLeft90()
         moveVertical(0.5)
@@ -172,7 +157,6 @@ def autoMove():
         moveVertical(0.5)
         turnRight90()
         moveHorizontal(5)
-    '''
 
 if __name__ == '__main__':
     try:

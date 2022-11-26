@@ -14,6 +14,22 @@ import getch
 #Twist object created as a global variable
 vel = Twist()
 
+def instructions():
+	print('''
+	-=-=-=-=-=-=- Turtlesim Teleop : Task1 -=-=-=-=-=-=-
+					
+						w
+					a	s	d
+						x
+
+	w,a,s,d = Move/Rotate forward,left,back,right
+	x		= Stops the turtle
+	q,z		= Incerase/Decrease linear velocity
+	e,c		= Increase/Decrease angular velocity
+
+	''')
+	
+
 #This function changes the Twist object content with parameters
 def set_twist(linear_v, angular_v):
 	global vel

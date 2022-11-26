@@ -30,7 +30,7 @@ killer("turtle1")
 #Spawning new turtle at a corner of the turtle sim
 rospy.wait_for_service('spawn')
 spawner = rospy.ServiceProxy('spawn', turtlesim.srv.Spawn)
-spawner(0.5, 0.250, 0,"cleaner_1")
+spawner(0.25, 0.250, 0,"cleaner_1")
 
 def isBetween(val,min,max):
     if val>=min and val<=max:

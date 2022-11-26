@@ -12,7 +12,7 @@ import rospy
 from geometry_msgs.msg import Twist
 from turtlesim.msg import Pose
 import turtlesim.srv
-from math import atan2,sqrt,radians,degrees
+from math import radians,degrees
 import time
 from std_srvs.srv import Empty
 
@@ -44,6 +44,8 @@ def heading360(deg):
         return 90
     if isBetween(deg,135,224):
         return 180
+    if isBetween(deg,225,314):
+        return 270
 
 def clamp(val,min,max):
     if val<min:

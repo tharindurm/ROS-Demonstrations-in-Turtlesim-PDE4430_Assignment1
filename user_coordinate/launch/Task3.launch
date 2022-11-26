@@ -1,0 +1,4 @@
+<launch>
+<node pkg="turtlesim" type="turtlesim_node" name="turtle"></node>
+<node name="edge_avoider" pkg="user_coordinate" type="3_wall_detect.py" output="screen"></node>
+</launch>

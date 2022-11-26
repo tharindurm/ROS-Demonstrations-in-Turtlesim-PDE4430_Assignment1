@@ -1,6 +1,7 @@
 <launch>
 <node pkg="turtlesim" type="turtlesim_node" name="turtle"></node>
-
 <node name="cleaner_1" pkg="user_coordinate" type="5_multiple_cleaners_1.py" output="screen"></node>
 <node name="cleaner_2" pkg="user_coordinate" type="5_multiple_cleaners_2.py" ></node>
+<node name="cleaner_3" pkg="user_coordinate" type="5_multiple_cleaners_3.py" ></node>
+<node name="cleaner_4" pkg="user_coordinate" type="5_multiple_cleaners_4.py" ></node>
 </launch>
