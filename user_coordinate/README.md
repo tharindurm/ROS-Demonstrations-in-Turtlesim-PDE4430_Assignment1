@@ -45,7 +45,7 @@ according to the adjusted velocity values.
 
 The program will print the assigned buttons for each activity in the begining.
 
-![App Screenshot](https://via.placeholder.com/468x300?text=App+Screenshot+Here)
+![App Screenshot](../media/images/Task1.png)
 
 `getch` library is used to capture the keyboard inputs from the user and decide the values for 
 linear and angular velocities. These values are stored in a `Twist` message and then published

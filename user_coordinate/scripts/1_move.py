@@ -18,14 +18,16 @@ def instructions():
 	print('''
 	-=-=-=-=-=-=- Turtlesim Teleop : Task1 -=-=-=-=-=-=-
 					
-						w
-					a	s	d
-						x
+				w
+			a	s	d
+				x
 
 	w,a,s,d = Move/Rotate forward,left,back,right
 	x		= Stops the turtle
 	q,z		= Incerase/Decrease linear velocity
 	e,c		= Increase/Decrease angular velocity
+
+	Please keep the direction keys pressed to move the turtle
 
 	''')
 	
@@ -86,12 +88,14 @@ def move_turtle():
 		if c=="x":
 			set_twist(0.0,0.0)
 			pub.publish(vel)
-
+			
+		print("lin_vel =" ,lin_vel," ang_vel = ",ang_vel)
 		rate.sleep() 
 
 
 if __name__ == '__main__':
 	try:
+		instructions()
 		move_turtle()
 	except rospy.ROSlnterruptException:
 		pass 
