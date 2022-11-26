@@ -19,6 +19,8 @@ goal_pose = Pose()
 vel = Twist()
 displacement = 0.0
 
+thresh = 0.2
+
 #Variable to determin if the turtle is in the goal or not. initially its not in the goal hense its True
 away = True
 
@@ -51,6 +53,7 @@ def clamp_vel(speed, max, min):
         return min
     return speed
 
+
 def turnToGoal():
     print("Turning towards GOAL")
     global current_pose
@@ -82,12 +85,13 @@ def moveToGoal():
     global current_pose
     global displacement
     global away
+    global thresh
 
     print("Move command Started")
     while True:
         if away:
             print("Move command While Loop")
-            if displacement>0.2:
+            if displacement>thresh:
                 vel.angular.z = atan2(goal_pose.y-current_pose.y, goal_pose.x-current_pose.x) - current_pose.theta
                 vel.linear.x = clamp_vel(displacement,1,0.4)
                 #print("Displacement : ",displacement,"\n")
