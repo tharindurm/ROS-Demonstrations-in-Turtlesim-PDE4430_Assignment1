@@ -139,7 +139,7 @@ is also reduced when it reaches an edge.
 
 ## Task 5: Multiple turtles vacuum cleaning behaviour
 ### Node behaviour
-The turtlesim stage is traversed by 4 turtles mimicking the behaviour of vacuum cleaning robots
+The turtlesim stage is traversed by 4 turtles mimicking the behaviour of multiple vacuum cleaning robots
 cleaning a room
 
 ### Node explanation
@@ -149,6 +149,8 @@ In each node the spwning position of the robot is changed to spwan turtles in
 different places in the turtlesim stage.
 
 ![App Screenshot](https://via.placeholder.com/468x300?text=App+Screenshot+Here)
+
+It was noted during the implementation that sometimes synchronization problems causes nodes to behave in unexpected way unless handled.
 
 
 ## Custom helper functions used

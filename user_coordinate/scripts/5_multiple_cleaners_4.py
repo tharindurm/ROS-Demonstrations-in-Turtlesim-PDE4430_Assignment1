@@ -20,17 +20,13 @@ currentPose = Pose()
 x = currentPose.x
 y = currentPose.y
 
-vel_pub = rospy.Publisher('/cleaner_1/cmd_vel',Twist, queue_size=10)
+vel_pub = rospy.Publisher('/cleaner_4/cmd_vel',Twist, queue_size=10)
 
-#Deleting default 'turtle1' instance form turtlesim
-rospy.wait_for_service('kill')
-killer = rospy.ServiceProxy('kill',turtlesim.srv.Kill)
-killer("turtle1")
 
 #Spawning new turtle at a corner of the turtle sim
 rospy.wait_for_service('spawn')
 spawner = rospy.ServiceProxy('spawn', turtlesim.srv.Spawn)
-spawner(0.25, 0.250, 0,"cleaner_1")
+spawner(5.75, 5.75, 0,"cleaner_4")
 
 def isBetween(val,min,max):
     if val>=min and val<=max:
@@ -60,14 +56,20 @@ def moveHorizontal(dist):
     x_move = Twist()
     x_move.linear.x = 0.8
 
+    while currentPose.x==0:
+        pass
+
     startx = currentPose.x
     totalDistance = 0
 
     while totalDistance<=dist:
         totalDistance = abs(currentPose.x - startx)
-        print("TotalDistance : ",totalDistance)
+        #totalDistance = abs(currentPose.x - 10.25)
+        print("currentPose.x : ",currentPose.x," startx : ",startx)
         x_move.linear.x = clamp(dist-totalDistance,0.8,2)
         vel_pub.publish(x_move)
+
+
 
     x_move.linear.x = 0.0
     vel_pub.publish(x_move)
@@ -140,19 +142,19 @@ def turnRight90():
 
 def updateGlobalCurrentPose(data):
     global currentPose
-    if not data is None:
-        currentPose = data
+    currentPose = data
 
 def autoMove():
     global currentPose
     global vel_pub
 
-    rospy.init_node('cleaner_1', anonymous=True)
-    pose_subscriber = rospy.Subscriber('/cleaner_1/pose',Pose, updateGlobalCurrentPose)
+    rospy.init_node('cleaner_4', anonymous=True)
+    pose_subscriber = rospy.Subscriber('/cleaner_4/pose',Pose, updateGlobalCurrentPose)
     rate = rospy.Rate(10)
     
-    moveHorizontal(5)
+    
     for i in range(5):
+        moveHorizontal(5)
         turnLeft90()
         moveVertical(0.5)
         turnLeft90()
@@ -160,7 +162,8 @@ def autoMove():
         turnRight90()
         moveVertical(0.5)
         turnRight90()
-        moveHorizontal(5)
+
+    moveHorizontal(5)
 
 if __name__ == '__main__':
     try:

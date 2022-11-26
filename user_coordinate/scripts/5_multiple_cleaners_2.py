@@ -152,7 +152,7 @@ def autoMove():
     pose_subscriber = rospy.Subscriber('/cleaner_2/pose',Pose, updateGlobalCurrentPose)
     rate = rospy.Rate(10)
     
-    moveHorizontal(5.5)
+    moveHorizontal(5)
     for i in range(5):
         turnLeft90()
         moveVertical(0.5)
