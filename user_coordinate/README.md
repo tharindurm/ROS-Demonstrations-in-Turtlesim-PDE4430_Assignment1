@@ -15,8 +15,24 @@ which control the 4 robots in the turtlesim.
 
 
 ## Guide to execute nodes
-Each file requires 'Turtlesim' node to be running in order to see the output. 
+Each file requires 'roscore' and 'Turtlesim' nodes to be running in order to see the output.
 
+Execute the turtlesim using following command
+```bash
+  rosrun turtlesim turtlesim_node
+```
+
+To execute python files as nodes, thry should be given execution permission. Open up a terminal in the scripts folder of the package and run the following command to give execution permission to every file inside the folder
+```bash
+  chmod +x *.py
+```
+
+to give permission only to a specific file run
+```bash
+chmod +x filename.py
+```
+
+In order to run a specific python file
 
 Command:
 ```bash
@@ -172,7 +188,9 @@ different places in the turtlesim stage.
 
 ![App Screenshot](../media/images/Task5.png)
 
-It was noted during the implementation that sometimes synchronization problems causes nodes to behave in unexpected way unless handled.
+***It was noted during the implementation that sometimes synchronization problems 
+causes nodes to behave in unexpected way unless handled. This caused current position of the turtle to be
+calculated as 0 in the begining when the node started.***
 
 
 ## Custom helper functions used
@@ -256,3 +274,9 @@ Output: Returns a number out of `0,90,180,270` when theta is given in degrees.
 This function is used to determine the current orientation of the turtle 
 interms of degrees. The numbers `0,90,180,270` corresponds the directions
 `right,top,left,bottom` directions.
+
+
+
+## Author
+
+- [@tharindurm](https://github.com/tharindurm) M00909166 - TP549@live.mdx.ac.lk
