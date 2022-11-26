@@ -36,14 +36,9 @@ This node is capable of capturing the keyboard inputs from
 the user to control the movements of the turtle in the turtlesim. 
 
 ### Node explanation
-The node gives user 2 options to choose from; 
+The program will print the assigned buttons for each activity in the begining. The turtle will move according to the key presses of the user.
 
-**Option 1:** Allows user to use separate keys to move the turtle and adjust linear and angular velocities of the turtle
-
-**Option 2:** Allows user to change the velocity values by tapping the same key and the turtle will keep moving
-according to the adjusted velocity values.
-
-The program will print the assigned buttons for each activity in the begining.
+Note: Since `getch` library is used to capture key presses, in order to move the turtle continuously press and hold the keys.
 
 ![App Screenshot](../media/images/Task1.png)
 
@@ -76,7 +71,7 @@ closing in on the destination coordinates. Once it reaches the goal, the node te
 By default the turtle reaches its goal with an accuracy of (+/-)0.2 turtlesim units. This can be 
 changed by changing the value of `thresh` global variable in the begining of the code
 
-![App Screenshot](https://via.placeholder.com/468x300?text=App+Screenshot+Here)
+![App Screenshot](../media/images/Task2.png)
 
 
 ## Task 3: Wall detection and avoidance
@@ -96,7 +91,7 @@ to make the turtle move. The only purpose of the callback function of the subscr
 to update a global variable `currentPose` which can accessed by the other function to 
 determine the position and the orientation of the turtle.
 
-![App Screenshot](https://via.placeholder.com/468x300?text=App+Screenshot+Here)
+![App Screenshot](../media/images/Task3.png)
 
 ## Task 4: Vacuum cleaning behaviour
 ### Node behaviour
@@ -137,7 +132,7 @@ moving horizontally, moving vertically, turning left and turning right. In order
 precisely, the robot will turn slowly to avoid overshooting the limit. The speed of the turtle
 is also reduced when it reaches an edge.
 
-![App Screenshot](https://via.placeholder.com/468x300?text=App+Screenshot+Here)
+![App Screenshot](../media/images/Task4.png)
 
 
 
