@@ -11,7 +11,7 @@ This coursework is focused on completing 5 Tasks using ROS framework. The tasks 
 
 The nodes to achieve each task were coded using Python and each file name starts with 
 the task number for easy identification. For the last task, 4 separate files were created 
-which control the 4 robots in the turtlesim.
+which control the 4 robots in the turtlesim. Video demonstrations are included in the 'media' folder.
 
 
 ## Guide to execute nodes
