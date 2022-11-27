@@ -17,20 +17,26 @@ which control the 4 robots in the turtlesim. Video demonstrations are included i
 ## Guide to execute nodes
 Each file requires 'roscore' and 'Turtlesim' nodes to be running in order to see the output.
 
-Execute the turtlesim using following command
+Execute the `roscore` and `turtlesim` using following commands
 ```bash
   rosrun turtlesim turtlesim_node
 ```
 
-To execute python files as nodes, thry should be given execution permission. Open up a terminal in the scripts folder of the package and run the following command to give execution permission to every file inside the folder
+To execute python files as nodes, they should be given execution permission. Open up a terminal in the scripts folder of the package and run the following command to give execution permission to every file inside the folder
 ```bash
   chmod +x *.py
 ```
 
-to give permission only to a specific file run
+To give permission only to a specific file run
 ```bash
 chmod +x filename.py
 ```
+
+Make sure to copy the `user_coordinate` folder in to the `src` folder in the workspace and build the workspace again by executing the following command,
+```bash
+ catkin_make
+```
+
 
 In order to run a specific python file
 
@@ -78,7 +84,7 @@ The program will print the assigned buttons for each activity in the begining. T
 
 Note: Since `getch` library is used to capture key presses, in order to move the turtle continuously press and hold the keys.
 
-![App Screenshot](/media/images/Task1.png)
+![App Screenshot](../media/images/Task1.png)
 
 `getch` library is used to capture the keyboard inputs from the user and decide the values for 
 linear and angular velocities. These values are stored in a `Twist` message and then published
@@ -109,7 +115,7 @@ closing in on the destination coordinates. Once it reaches the goal, the node te
 By default the turtle reaches its goal with an accuracy of (+/-)0.2 turtlesim units. This can be 
 changed by changing the value of `thresh` global variable in the begining of the code
 
-![App Screenshot](/media/images/Task2.png)
+![App Screenshot](../media/images/Task2.png)
 
 
 ## Task 3: Wall detection and avoidance
@@ -129,7 +135,7 @@ to make the turtle move. The only purpose of the callback function of the subscr
 to update a global variable `currentPose` which can accessed by the other function to 
 determine the position and the orientation of the turtle.
 
-![App Screenshot](/media/images/Task3.png)
+![App Screenshot](../media/images/Task3.png)
 
 ## Task 4: Vacuum cleaning behaviour
 ### Node behaviour
@@ -170,7 +176,7 @@ moving horizontally, moving vertically, turning left and turning right. In order
 precisely, the robot will turn slowly to avoid overshooting the limit. The speed of the turtle
 is also reduced when it reaches an edge.
 
-![App Screenshot](/media/images/Task4.png)
+![App Screenshot](../media/images/Task4.png)
 
 
 
@@ -182,16 +188,19 @@ cleaning a room
 
 ### Node explanation
 The same code used in the task 4 is reused in here. Instead of using one node to 
-control all 4 turtles, 4 individual nodes are created to control each turtle.
+control all 4 turtles, 4 individual nodes have been created to control each turtle. This inceases the stability of the system as the 4 turtles are independant. A failure in one of the node will not affect the execution of others.
 In each node the spwning position of the robot is changed to spwan turtles in 
 different places in the turtlesim stage.
 
-![App Screenshot](/media/images/Task5.png)
+![App Screenshot](../media/images/Task5.png)
 
 ***It was noted during the implementation that sometimes synchronization problems 
 causes nodes to behave in unexpected way unless handled. This caused current position of the turtle to be
-calculated as 0 in the begining when the node started.***
+calculated as 0 in the begining when the node started as callback function of the subscriber lagged behind when updating the `currentPose` information of the turtle.***
 
+
+The following shows the `rqt_graph` of the Task5 implementation.
+![App Screenshot](../media/images/T5rosgraph.png)
 
 ## Custom helper functions used
 **Name: inThreshRange(value,threshold)**

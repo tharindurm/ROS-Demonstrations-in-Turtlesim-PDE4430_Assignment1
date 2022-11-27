@@ -17,20 +17,26 @@ which control the 4 robots in the turtlesim. Video demonstrations are included i
 ## Guide to execute nodes
 Each file requires 'roscore' and 'Turtlesim' nodes to be running in order to see the output.
 
-Execute the turtlesim using following command
+Execute the `roscore` and `turtlesim` using following commands
 ```bash
   rosrun turtlesim turtlesim_node
 ```
 
-To execute python files as nodes, thry should be given execution permission. Open up a terminal in the scripts folder of the package and run the following command to give execution permission to every file inside the folder
+To execute python files as nodes, they should be given execution permission. Open up a terminal in the scripts folder of the package and run the following command to give execution permission to every file inside the folder
 ```bash
   chmod +x *.py
 ```
 
-to give permission only to a specific file run
+To give permission only to a specific file run
 ```bash
 chmod +x filename.py
 ```
+
+Make sure to copy the `user_coordinate` folder in to the `src` folder in the workspace and build the workspace again by executing the following command,
+```bash
+ catkin_make
+```
+
 
 In order to run a specific python file
 
@@ -182,7 +188,7 @@ cleaning a room
 
 ### Node explanation
 The same code used in the task 4 is reused in here. Instead of using one node to 
-control all 4 turtles, 4 individual nodes are created to control each turtle.
+control all 4 turtles, 4 individual nodes have been created to control each turtle. This inceases the stability of the system as the 4 turtles are independant. A failure in one of the node will not affect the execution of others.
 In each node the spwning position of the robot is changed to spwan turtles in 
 different places in the turtlesim stage.
 
@@ -190,8 +196,11 @@ different places in the turtlesim stage.
 
 ***It was noted during the implementation that sometimes synchronization problems 
 causes nodes to behave in unexpected way unless handled. This caused current position of the turtle to be
-calculated as 0 in the begining when the node started.***
+calculated as 0 in the begining when the node started as callback function of the subscriber lagged behind when updating the `currentPose` information of the turtle.***
 
+
+The following shows the `rqt_graph` of the Task5 implementation.
+![App Screenshot](../media/images/T5rosgraph.png)
 
 ## Custom helper functions used
 **Name: inThreshRange(value,threshold)**

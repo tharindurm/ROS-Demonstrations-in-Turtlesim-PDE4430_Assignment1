@@ -66,13 +66,13 @@ def moveHorizontal(dist):
     x_move = Twist()
     x_move.linear.x = 0.8
 
-    startx = currentPose.x
-    totalDistance = 0
-
     #In the begining of execution due to synchronization problems currentPose variable migh not be updated timely.
     #Having 0 breaks the code. Busy waiting untill the currentPose receives values from the subscriber callback function
     while currentPose.x==0:
         pass
+
+    startx = currentPose.x
+    totalDistance = 0
 
     #The loop will execute untill the distance travelled is less than the specified distance given as the parameter
     while totalDistance<=dist:
