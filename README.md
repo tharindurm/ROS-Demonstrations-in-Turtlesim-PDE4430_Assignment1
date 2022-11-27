@@ -84,7 +84,7 @@ The program will print the assigned buttons for each activity in the begining. T
 
 Note: Since `getch` library is used to capture key presses, in order to move the turtle continuously press and hold the keys.
 
-![App Screenshot](../media/images/Task1.png)
+![App Screenshot](./media/images/Task1.png)
 
 `getch` library is used to capture the keyboard inputs from the user and decide the values for 
 linear and angular velocities. These values are stored in a `Twist` message and then published
@@ -115,7 +115,7 @@ closing in on the destination coordinates. Once it reaches the goal, the node te
 By default the turtle reaches its goal with an accuracy of (+/-)0.2 turtlesim units. This can be 
 changed by changing the value of `thresh` global variable in the begining of the code
 
-![App Screenshot](../media/images/Task2.png)
+![App Screenshot](./media/images/Task2.png)
 
 
 ## Task 3: Wall detection and avoidance
@@ -135,7 +135,7 @@ to make the turtle move. The only purpose of the callback function of the subscr
 to update a global variable `currentPose` which can accessed by the other function to 
 determine the position and the orientation of the turtle.
 
-![App Screenshot](../media/images/Task3.png)
+![App Screenshot](./media/images/Task3.png)
 
 ## Task 4: Vacuum cleaning behaviour
 ### Node behaviour
@@ -176,7 +176,7 @@ moving horizontally, moving vertically, turning left and turning right. In order
 precisely, the robot will turn slowly to avoid overshooting the limit. The speed of the turtle
 is also reduced when it reaches an edge.
 
-![App Screenshot](../media/images/Task4.png)
+![App Screenshot](./media/images/Task4.png)
 
 
 
@@ -192,7 +192,7 @@ control all 4 turtles, 4 individual nodes have been created to control each turt
 In each node the spwning position of the robot is changed to spwan turtles in 
 different places in the turtlesim stage.
 
-![App Screenshot](../media/images/Task5.png)
+![App Screenshot](./media/images/Task5.png)
 
 ***It was noted during the implementation that sometimes synchronization problems 
 causes nodes to behave in unexpected way unless handled. This caused current position of the turtle to be
@@ -200,7 +200,7 @@ calculated as 0 in the begining when the node started as callback function of th
 
 
 The following shows the `rqt_graph` of the Task5 implementation.
-![App Screenshot](../media/images/T5rosgraph.png)
+![App Screenshot](./media/images/T5rosgraph.png)
 
 ## Custom helper functions used
 **Name: inThreshRange(value,threshold)**
