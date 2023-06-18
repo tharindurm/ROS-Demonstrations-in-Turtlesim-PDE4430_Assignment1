@@ -6,12 +6,12 @@ This coursework is focused on completing 5 Tasks using ROS framework. The tasks 
 - Teleoperation using the keyboard, with an option to change movement speed
 - Autonomous navigation to any given coordinate in the Turtlesim window
 - Avoiding wall collision – Override movement if wall hitting is imminent
-- Vacuum cleaning behaviour – Covering the entire window in an efficient manner
-- Multiple turtles vacuum cleaning behaviour – 2 is good, 3 or more is great
+- Vacuum cleaning behavior – Covering the entire window in an efficient manner
+- Multiple turtles vacuum cleaning behavior – 2 is good, 3 or more is great
 
 The nodes to achieve each task were coded using Python and each file name starts with 
 the task number for easy identification. For the last task, 4 separate files were created 
-which control the 4 robots in the turtlesim. Video demonstrations are included in the 'media' folder.
+that control the 4 robots in the turtlesim. Video demonstrations are included in the 'media' folder.
 
 
 ## Guide to execute nodes
@@ -32,7 +32,7 @@ To give permission only to a specific file run
 chmod +x filename.py
 ```
 
-Make sure to copy the `user_coordinate` folder in to the `src` folder in the workspace and build the workspace again by executing the following command,
+Make sure to copy the `user_coordinate` folder into the `src` folder in the workspace and build the workspace again by executing the following command,
 ```bash
  catkin_make
 ```
@@ -75,7 +75,7 @@ Eg:
 ```
 
 ## Task 1 : Teleoperation for Turtlesim
-### Node behaviour
+### Node behavior
 This node is capable of capturing the keyboard inputs from 
 the user to control the movements of the turtle in the turtlesim. 
 
@@ -91,12 +91,12 @@ linear and angular velocities. These values are stored in a `Twist` message and 
 into `cmd_vel` topic to move the turtle.
 
 ## Task 2: Autonomous navigation to goal
-### Node behaviour
+### Node behavior
 This ROS node will ask the user to enter the `x` and `y` coordinates of the destination and the 
 turtle first turn towards the goal and then move towards it.
 
 ### Node explanation
-The node subscribe to the `pose` topic of the turtle to know the current position and orientation of it in the
+The node subscribes to the `pose` topic of the turtle to know the current position and orientation of it in the
 turtlesim. The displacement between the goal and the robot is calculated using 'Pythagoras theorem'
 
 ```python
@@ -195,8 +195,7 @@ different places in the turtlesim stage.
 ![App Screenshot](./media/images/Task5.png)
 
 ***It was noted during the implementation that sometimes synchronization problems 
-causes nodes to behave in unexpected way unless handled. This caused current position of the turtle to be
-calculated as 0 in the begining when the node started as callback function of the subscriber lagged behind when updating the `currentPose` information of the turtle.***
+causes nodes to behave in an unexpected way unless handled. The main node program lagged behind when updating the `currentPose` information of the turtles when the nodes are starting for the first time. This lag caused the current position of the turtle (x and y coordinates) to be calculated as 0,0 in the begining when the separate nodes started to each turtle via the callback function. This was problematic for all turtles as they were spawning in different locations rather than 0,0 coordinate. ***
 
 
 The following shows the `rqt_graph` of the Task5 implementation.
@@ -224,7 +223,7 @@ can cause errors in the code if used in conditions like `if value==5`. When movi
 values can be easily overshoot. 
 
 Eg: `if value == inThreshRange(5,05)` -> will return `True` if the value 
-reaches any where between `4.95` to `5.05`
+reaches anywhere between `4.95` to `5.05`
 
 This gives `value` a wiggle room to be `True`.
 
@@ -288,4 +287,4 @@ interms of degrees. The numbers `0,90,180,270` corresponds the directions
 
 ## Author
 
-- [@tharindurm](https://github.com/tharindurm) M00909166 - TP549@live.mdx.ac.lk
+- [@tharindurm](https://github.com/tharindurm) M00909166 - TP549@live.mdx.ac.lk / tharindurm@gmail.com
